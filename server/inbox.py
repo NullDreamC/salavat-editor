@@ -7,7 +7,7 @@ import httpx
 from fastapi import Depends
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from . import integrations
+from . import billing, integrations
 from .domain import APPROVER_ROLES, EDITOR_ROLES, DomainError, audit_row, normalize_text, pack, utc_now
 
 
@@ -276,7 +276,8 @@ async def _request_draft(endpoint, model, headers, body, facts):
         "max_output_tokens": 3000,
     }
     try:
-        response = await integrations._post_generation(endpoint, headers, payload, integrations._TEXT_TIMEOUT)
+        response = await billing.metered_generation(integrations._post_generation, endpoint, headers, payload,
+                                                    integrations._TEXT_TIMEOUT)
     except (httpx.HTTPError, UnicodeError):
         raise integrations.GenerationError("Не удалось связаться с сервисом генерации.") from None
     if not response.is_success:
@@ -312,7 +313,8 @@ async def generate_draft(service, cid, item_id, payload, actor):
                            (claim, claim, utc_now(), cid, item_id))
     try:
         try:
-            result = await _request_draft(endpoint, model, headers, body, facts)
+            with billing.billing_scope(service.db, text=usage_id):
+                result = await _request_draft(endpoint, model, headers, body, facts)
         except integrations.GenerationError as error:
             service.audit(cid, "inbox.generation_failed", f"Не удалось подготовить ответ №{item_id}.", actor)
             raise DomainError(str(error), 429 if error.status_code == 429 else 502) from error

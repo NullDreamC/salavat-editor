@@ -12,7 +12,7 @@ import time
 from zoneinfo import ZoneInfo
 import httpx
 
-from . import post_edits
+from . import post_edits, crm
 from .integrations import telegram_call, publish_telegram, message_is_addressed, IntegrationError, TelegramError
 from .webapp import configure_bot, menu_markup, public_url
 from .network import http_options
@@ -28,6 +28,13 @@ from .inbox import auto_process_inbox, sync_social_activity
 from .reports import deliver_reports, due_reports, initialize_reports
 from .review_policy import configured_reviewer_ids, reviewer_ids
 from .telegram_intents import handle_free_request, handle_intent_callback, initialize_intents
+from .attribution import initialize_attribution
+from .research import initialize_research, refresh_research
+from .strategy import initialize_strategy, refresh_strategy
+from .telegram_observation import (
+    initialize_telegram_observation, handle_telegram_observation_update, sync_telegram_observation,
+    close_telegram_observation,
+)
 
 LOG = logging.getLogger(__name__)
 TASK_COMMANDS = {
@@ -83,6 +90,11 @@ class Worker:
             )
         initialize_intents(service)
         initialize_reports(service)
+        initialize_research(service)
+        initialize_strategy(service)
+        initialize_telegram_observation(service)
+        initialize_attribution(service)
+        crm.initialize(self.db)
 
     def state(self, key, value=None):
         with self.db.transaction() as conn:
@@ -114,6 +126,9 @@ class Worker:
                             ('telegram', self.tick), ('assistant', self.assistant_tick),
                             ('routines', self.routines_tick), ('inbox', self.inbox_tick),
                             ('reports', self.reports_tick),
+                            ('research', self.research_tick), ('strategy', self.strategy_tick),
+                            ('telegram-observation', self.telegram_observation_tick),
+                            ('crm', self.crm_tick),
                         ):
                             key = cid, name
                             if key not in cycles:
@@ -125,6 +140,7 @@ class Worker:
             for task in cycles.values():
                 task.cancel()
             await asyncio.gather(*cycles.values(), return_exceptions=True)
+            await close_telegram_observation(self.service)
 
     async def assistant_tick(self, company):
         cid = company['id']
@@ -141,6 +157,18 @@ class Worker:
 
     async def routines_tick(self, company):
         due_routines(self.service, company['id'])
+
+    async def research_tick(self, company):
+        await refresh_research(self.service, company['id'])
+
+    async def strategy_tick(self, company):
+        refresh_strategy(self.service, company['id'])
+
+    async def telegram_observation_tick(self, company):
+        await sync_telegram_observation(self.service, company['id'])
+
+    async def crm_tick(self, company):
+        await crm.sync_due(self.service, company['id'])
 
     async def reports_tick(self, company):
         cid = company['id']
@@ -197,7 +225,8 @@ class Worker:
             offset_key = f'offset:{cid}:{identity["id"]}'
             updates = await telegram_call(token, 'getUpdates', {
                 'offset': int(self.state(offset_key) or 0), 'timeout': 0,
-                'allowed_updates': ['message', 'callback_query'], 'limit': 30,
+                'allowed_updates': ['message', 'edited_message', 'callback_query',
+                                    'message_reaction_count', 'my_chat_member'], 'limit': 30,
             })
             with self.db.transaction() as conn:
                 for update in updates:
@@ -214,7 +243,9 @@ class Worker:
                 try:
                     update = json.loads(batch[0]['body'])
                     if update.get('message', {}).get('media_group_id'):
-                        await self.handle_album(company, token, [json.loads(item['body'])['message'] for item in batch])
+                        album_updates = [json.loads(item['body']) for item in batch]
+                        await self.handle_album(company, token, [item['message'] for item in album_updates],
+                                                observation_updates=album_updates)
                     else:
                         await self.handle(company, token, update)
                     status = 'done'
@@ -273,6 +304,8 @@ class Worker:
         return await telegram_call(token, 'sendMessage', {'chat_id': chat, 'text': text, **kwargs})
 
     async def handle(self, company, token, update):
+        if await handle_telegram_observation_update(self.service, company['id'], token, update):
+            return
         cid = company['id']
         callback = update.get('callback_query')
         if callback:
@@ -650,7 +683,11 @@ class Worker:
             return False
         return True
 
-    async def handle_album(self, company, token, messages):
+    async def handle_album(self, company, token, messages, *, observation_updates=None):
+        observed = [await handle_telegram_observation_update(self.service, company['id'], token, update)
+                    for update in (observation_updates or [{'message': item} for item in messages])]
+        if any(observed):
+            return
         if any(message.get('from', {}).get('is_bot') or message.get('sender_chat') for message in messages):
             return
         first = messages[0]

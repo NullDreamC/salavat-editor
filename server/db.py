@@ -8,6 +8,8 @@ import os
 import secrets
 import sqlite3
 
+from .billing import SCHEMA as BILLING_SCHEMA, migrate_schema as migrate_billing_schema
+
 
 ROOT = Path(__file__).resolve().parent.parent
 PASSWORD_ITERATIONS = 600_000
@@ -107,6 +109,7 @@ CREATE TABLE IF NOT EXISTS posts (
     logo_placement TEXT,
     publication_url TEXT,
     message_id TEXT,
+    telegram_chat_id TEXT,
     feedback TEXT,
     publication_uncertain INTEGER NOT NULL DEFAULT 0,
     approved_snapshot TEXT
@@ -161,8 +164,9 @@ class Database:
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.uploads_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
         with self.read() as connection:
-            connection.executescript(SCHEMA)
+            connection.executescript(SCHEMA + BILLING_SCHEMA)
         with self.transaction() as connection:
+            migrate_billing_schema(connection)
             columns = {column["name"] for column in connection.execute("PRAGMA table_info(companies)")}
             if "editorial_rules" not in columns:
                 connection.execute("ALTER TABLE companies ADD COLUMN editorial_rules TEXT NOT NULL DEFAULT ''")
@@ -176,6 +180,8 @@ class Database:
                 connection.execute("ALTER TABLE memberships ADD COLUMN can_approve INTEGER NOT NULL DEFAULT 0 "
                                    "CHECK(can_approve=0 OR (can_approve=1 AND role='editor'))")
             post_columns = {column["name"] for column in connection.execute("PRAGMA table_info(posts)")}
+            if "telegram_chat_id" not in post_columns:
+                connection.execute("ALTER TABLE posts ADD COLUMN telegram_chat_id TEXT")
             if "platform" not in post_columns:
                 connection.execute("ALTER TABLE posts ADD COLUMN platform TEXT NOT NULL DEFAULT 'telegram'")
             if "created_by" not in post_columns:

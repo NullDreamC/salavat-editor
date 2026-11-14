@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Activity, BookOpen, Building2, CalendarDays, ChartNoAxesCombined, ChevronDown, Files, Inbox as InboxIcon, KeyRound, Link2, ListTodo, LogOut, MessageSquare, Newspaper, Plus, Settings2, Users } from 'lucide-react'
+import { Activity, BookOpen, Building2, CalendarDays, ChartNoAxesCombined, ChevronDown, Files, Inbox as InboxIcon, KeyRound, Link2, ListTodo, LogOut, MessageSquare, Newspaper, Plus, Search, Settings2, Users, Wallet } from 'lucide-react'
 import { api, ApiError, errorText, roles } from './api'
 import type { Company, User } from './api'
 import { Brand, Empty, ErrorMessage, formAction, formText, Loading, Modal, useAction, useData } from './ui'
@@ -16,12 +16,15 @@ import { ContentPlan } from './ContentPlan'
 import { Inbox } from './Inbox'
 import { Analytics } from './Analytics'
 import { Reports } from './Reports'
+import { Research } from './Research'
+import { Billing } from './Billing'
 
 const routes = [
   { id: 'access', label: 'Доступы', icon: KeyRound },
   { id: 'posts', label: 'Публикации', icon: Newspaper },
   { id: 'tasks', label: 'Задачи', icon: MessageSquare },
   { id: 'plan', label: 'Контент-план', icon: ListTodo },
+  { id: 'research', label: 'Исследования', icon: Search },
   { id: 'materials', label: 'Материалы', icon: Files },
   { id: 'knowledge', label: 'База знаний', icon: BookOpen },
   { id: 'inbox', label: 'Обращения', icon: InboxIcon },
@@ -31,6 +34,7 @@ const routes = [
   { id: 'employees', label: 'Сотрудники', icon: Users },
   { id: 'activity', label: 'Журнал', icon: Activity },
   { id: 'settings', label: 'Настройки', icon: Settings2 },
+  { id: 'billing', label: 'Расходы', icon: Wallet },
   { id: 'shared', label: 'Общие ключи', icon: Link2 },
 ] as const
 type Route = typeof routes[number]['id']
@@ -116,8 +120,14 @@ function Workspace({ user, signOut, passwordChanged }: { user: User; signOut: ()
   const company = companies.data?.find((item) => item.id === companyId) ?? companies.data?.[0]
   const isSuper = user.role === 'super_admin'
   const isAdmin = company?.role === 'admin'
-  const screen = isSuper ? (route === 'settings' || route === 'shared' ? route : 'access') :
-    route === 'access' || route === 'shared' || route === 'calendar' && !company?.calendar_enabled || (route === 'employees' || route === 'settings') && !isAdmin ? 'posts' : route
+  const visibleRoutes = routes.filter(({ id }) => {
+    if (isSuper) return id === 'shared' || id === 'billing' || !!company && ['access', 'settings'].includes(id)
+    if (id === 'access' || id === 'shared') return false
+    if (id === 'calendar') return !!company?.calendar_enabled
+    if (id === 'employees' || id === 'settings' || id === 'billing') return isAdmin
+    return true
+  })
+  const screen = visibleRoutes.some(({ id }) => id === route) ? route : isSuper ? 'access' : 'posts'
   const initials = user.name.trim().split(/\s+/).slice(0, 2).map((word) => word[0]).join('').toUpperCase()
   const logo = <div className="sidebar-heading"><Brand /></div>
   const pickCompany = (id: number) => { setCompanyId(id); setNewPost(null) }
@@ -152,8 +162,7 @@ function Workspace({ user, signOut, passwordChanged }: { user: User; signOut: ()
         <ChevronDown size={15} aria-hidden="true" />
       </div>
       {(company || isSuper) && <nav className="navigation" aria-label="Разделы редакции">
-        {routes.filter(({ id }) => isSuper ? id === 'shared' || !!company && ['access', 'settings'].includes(id) :
-          id !== 'access' && id !== 'shared' && (id !== 'calendar' || company?.calendar_enabled) && (id !== 'employees' && id !== 'settings' || isAdmin))
+        {visibleRoutes
           .map(({ id, label, icon: Icon }) => <button key={id} className={screen === id ? 'nav-link active' : 'nav-link'}
             aria-current={screen === id ? 'page' : undefined} onClick={() => { setRoute(id); setNewPost(null) }}>
             <Icon size={18} strokeWidth={1.7} aria-hidden="true" /><span>{label}</span>
@@ -176,7 +185,9 @@ function Workspace({ user, signOut, passwordChanged }: { user: User; signOut: ()
     </aside>
     <main className="content" key={company?.id}>
       <ErrorMessage message={!showCreate ? action.error : ''} />
-      {screen === 'shared' ? <SharedApiSettings /> : companies.error ? <ErrorMessage message={companies.error} retry={companies.retry} /> : !companies.data ? <Loading /> :
+      {screen === 'shared' ? <SharedApiSettings /> : screen === 'billing' && (company || isSuper) ?
+        <Billing company={company} global={isSuper} /> :
+        companies.error ? <ErrorMessage message={companies.error} retry={companies.retry} /> : !companies.data ? <Loading /> :
         !company ? <Empty icon={<Building2 size={27} />} title="Нет доступных компаний"
           action={isSuper && <button className="button primary" onClick={() => setShowCreate(true)}><Plus size={17} />Добавить компанию</button>} /> :
         screen === 'access' ? <AccessPage company={company} /> :
@@ -184,6 +195,7 @@ function Workspace({ user, signOut, passwordChanged }: { user: User; signOut: ()
         screen === 'materials' ? <Materials company={company} createPost={(ids) => { setNewPost(ids); setRoute('posts') }} /> :
         screen === 'tasks' ? <AssistantTasks company={company} /> :
         screen === 'plan' ? <ContentPlan company={company} /> :
+        screen === 'research' ? <Research company={company} /> :
         screen === 'knowledge' ? <Knowledge company={company} /> :
         screen === 'inbox' ? <Inbox company={company} /> :
         screen === 'analytics' ? <Analytics company={company} /> :

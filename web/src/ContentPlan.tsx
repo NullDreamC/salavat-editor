@@ -4,6 +4,7 @@ import { api, companyPath, shortDate } from './api'
 import type { Company, Post } from './api'
 import { selectedSources, TaskDialog, TaskKindField, TaskSources } from './AssistantTasks'
 import type { TaskKind } from './AssistantTasks'
+import { Strategy } from './Strategy'
 import { Empty, ErrorMessage, formAction, formText, Loading, Modal, PageHeader, useAction, useData } from './ui'
 
 const formats = { post: 'Публикация', video: 'Видео' }
@@ -31,12 +32,12 @@ type Routine = {
 }
 
 export function ContentPlan({ company, openPost }: { company: Company; openPost?: (id: number) => void }) {
-  const [tab, setTab] = useState<'plan' | 'routines'>('plan')
+  const [tab, setTab] = useState<'plan' | 'routines' | 'strategy'>('plan')
   const [adding, setAdding] = useState(false)
   const base = companyPath(company.id)
   const writable = company.role !== 'approver'
   return <>
-    <PageHeader title="План публикаций" action={writable && <button className="button primary" onClick={() => setAdding(true)}>
+    <PageHeader title="План публикаций" action={writable && tab !== 'strategy' && <button className="button primary" onClick={() => setAdding(true)}>
       <Plus size={18} />{tab === 'plan' ? 'Добавить в план' : 'Добавить регулярную задачу'}
     </button>} />
     <div className="surface">
@@ -45,9 +46,12 @@ export function ContentPlan({ company, openPost }: { company: Company; openPost?
           onClick={() => { setAdding(false); setTab('plan') }}>Публикации</button>
         <button className={tab === 'routines' ? 'tab active' : 'tab'} aria-pressed={tab === 'routines'}
           onClick={() => { setAdding(false); setTab('routines') }}>Регулярные задачи</button>
+        <button className={tab === 'strategy' ? 'tab active' : 'tab'} aria-pressed={tab === 'strategy'}
+          onClick={() => { setAdding(false); setTab('strategy') }}>Стратегия</button>
       </div>
       {tab === 'plan' ? <PlanItems base={base} adding={adding} writable={writable} openPost={openPost} endAdding={() => setAdding(false)} />
-        : <Routines base={base} adding={adding} writable={writable} timezone={company.timezone} endAdding={() => setAdding(false)} />}
+        : tab === 'routines' ? <Routines base={base} adding={adding} writable={writable} timezone={company.timezone} endAdding={() => setAdding(false)} />
+        : <Strategy company={company} />}
     </div>
   </>
 }

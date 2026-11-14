@@ -2,6 +2,8 @@ import { useCallback, useState } from 'react'
 import { ChartNoAxesCombined, Plus, RefreshCw, Upload } from 'lucide-react'
 import { api, companyPath, shortDate } from './api'
 import type { Company } from './api'
+import { Attribution } from './Attribution'
+import { TelegramObservation } from './TelegramObservation'
 import { Empty, ErrorMessage, Loading, Modal, PageHeader, formAction, formText, useAction, useData } from './ui'
 
 const metrics = {
@@ -19,6 +21,7 @@ type Rollup = {
 type Snapshot = Counts & {
   platform: string; publication_id: string; title: string; format: string
   published_on: string; observed_on: string; source: string; origin: string
+  metric_observations?: Partial<Record<keyof typeof metrics, { observed_on: string; source: string }>>
 }
 type Report = {
   items: Snapshot[]; summary: Rollup; formats: Array<Rollup & { format: string }>; er_formula: string
@@ -27,6 +30,21 @@ type Report = {
 type Mode = 'manual' | 'import' | 'sync'
 
 export function Analytics({ company }: { company: Company }) {
+  const [tab, setTab] = useState<'metrics' | 'telegram' | 'attribution'>('metrics')
+  const tabs = { metrics: 'Замеры', telegram: 'Telegram', attribution: 'Заявки и продажи' } as const
+  return <>
+    <div className="surface editor-tabs button-group" aria-label="Разделы статистики">
+      {(Object.keys(tabs) as Array<keyof typeof tabs>).map((key) => <button key={key}
+        className={tab === key ? 'tab active' : 'tab'} aria-pressed={tab === key}
+        onClick={() => setTab(key)}>{tabs[key]}</button>)}
+    </div>
+    {tab === 'metrics' ? <AnalyticsMetrics company={company} />
+      : tab === 'telegram' ? <TelegramObservation company={company} />
+      : <Attribution company={company} />}
+  </>
+}
+
+function AnalyticsMetrics({ company }: { company: Company }) {
   const path = companyPath(company.id) + '/analytics'
   const writable = company.role === 'admin' || company.role === 'editor'
   const [period, setPeriod] = useState({ start: '', end: '' })
@@ -80,8 +98,13 @@ export function Analytics({ company }: { company: Company }) {
             <div className="data-copy">
               <strong>{item.title}</strong>
               <small>{platforms[item.platform]} · {item.format} · опубликовано {shortDate(item.published_on)}</small>
-              <small>Замер от {shortDate(item.observed_on)} · {origins[item.origin]} · {item.source}</small>
-              <small>{countFields.filter((field) => item[field] != null).map((field) => `${metrics[field]} ${number.format(item[field]!)}`).join(' · ')}</small>
+              {item.metric_observations ? countFields.filter((field) => item[field] != null).map((field) => {
+                const observation = item.metric_observations?.[field] ?? item
+                return <small key={field}>{metrics[field]} {number.format(item[field]!)} · {shortDate(observation.observed_on)} · {observation.source}</small>
+              }) : <>
+                <small>Замер от {shortDate(item.observed_on)} · {origins[item.origin]} · {item.source}</small>
+                <small>{countFields.filter((field) => item[field] != null).map((field) => `${metrics[field]} ${number.format(item[field]!)}`).join(' · ')}</small>
+              </>}
             </div>
           </li>)}</ul>
         </section>

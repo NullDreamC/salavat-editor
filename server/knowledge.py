@@ -207,6 +207,10 @@ class _PageText(HTMLParser):
 
 
 async def _read_website(value):
+    return await _read_public(value, _extract_page, "text/html, application/xhtml+xml, text/plain")
+
+
+async def _read_public(value, extract, accepted_types):
     url = _import_url(value)
     try:
         async with asyncio.timeout(IMPORT_TIMEOUT):
@@ -218,7 +222,7 @@ async def _read_website(value):
                 async with httpx.AsyncClient(trust_env=False, follow_redirects=False, timeout=IMPORT_TIMEOUT) as client:
                     async with client.stream(
                         "GET", url.copy_with(host=address),
-                        headers={"Host": authority, "Accept": "text/html, application/xhtml+xml, text/plain",
+                        headers={"Host": authority, "Accept": accepted_types,
                                  "Accept-Encoding": "identity"},
                         extensions={"sni_hostname": hostname.rstrip(".")},
                     ) as response:
@@ -229,7 +233,7 @@ async def _read_website(value):
                             url = _import_url(urljoin(str(url), location))
                             continue
                         response.raise_for_status()
-                        return await _extract_page(url, response)
+                        return await extract(url, response)
     except (TimeoutError, httpx.TimeoutException) as error:
         raise DomainError("Сайт не ответил вовремя.", 504) from error
     except (OSError, ValueError, httpx.HTTPError) as error:
@@ -237,17 +241,7 @@ async def _read_website(value):
 
 
 async def _extract_page(url, response):
-    media_type = response.headers.get("content-type", "").partition(";")[0].strip().lower()
-    if media_type not in IMPORT_TYPES or response.headers.get("content-encoding", "identity").lower() != "identity":
-        raise DomainError("Сайт должен вернуть HTML или обычный текст без сжатия.", 415)
-    if int(response.headers.get("content-length", "0")) > MAX_IMPORT_BYTES:
-        raise DomainError("Страница превышает 1 МБ.", 413)
-    body = bytearray()
-    async for chunk in response.aiter_raw():
-        if len(body) + len(chunk) > MAX_IMPORT_BYTES:
-            raise DomainError("Страница превышает 1 МБ.", 413)
-        body.extend(chunk)
-
+    media_type, body = await _read_public_body(response, IMPORT_TYPES, MAX_IMPORT_BYTES)
     encoding = response.charset_encoding or "utf-8-sig"
     try:
         text = body.decode(encoding, errors="replace")
@@ -264,6 +258,22 @@ async def _extract_page(url, response):
     if not text.strip():
         raise DomainError("На странице не найден текст для импорта.", 422)
     return title[:240], text.strip()[:MAX_SOURCE_TEXT], str(url)
+
+
+async def _read_public_body(response, allowed_types, byte_limit=None):
+    byte_limit = MAX_IMPORT_BYTES if byte_limit is None else byte_limit
+    media_type = response.headers.get("content-type", "").partition(";")[0].strip().lower()
+    if media_type not in allowed_types or response.headers.get("content-encoding", "identity").lower() != "identity":
+        raise DomainError("Сайт вернул неподдерживаемый формат или сжатый ответ.", 415)
+    if int(response.headers.get("content-length", "0")) > byte_limit:
+        raise DomainError("Страница превышает 1 МБ.", 413)
+    body = bytearray()
+    async for chunk in response.aiter_raw():
+        if len(body) + len(chunk) > byte_limit:
+            raise DomainError("Страница превышает 1 МБ.", 413)
+        body.extend(chunk)
+
+    return media_type, body
 
 
 def register_knowledge_routes(api, service, member, editor):

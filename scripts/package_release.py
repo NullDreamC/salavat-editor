@@ -9,7 +9,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 ROOT_FILES = (
     '.gitignore', 'README.md', 'CONTRACT.md', 'requirements.txt', 'requirements.lock.txt',
-    'requirements-dev.txt', 'start.ps1', 'start.cmd', 'Инструкция_ИИ_редактору.md',
+    'requirements-dev.txt', 'requirements-telegram.txt', 'start.ps1', 'start.cmd', 'Инструкция_ИИ_редактору.md',
     'Редакционные_правила_для_постов.md', 'Как_работать_с_ботом.md',
 )
 

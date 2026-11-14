@@ -9,7 +9,7 @@ import secrets
 import unicodedata
 import zipfile
 
-from . import integrations
+from . import billing, integrations
 from .db import ROOT, reveal_secret, store_secret
 
 
@@ -319,6 +319,11 @@ class Service:
                 raise DomainError("Выберите источник оплаты API.", 422)
             if not is_global and ("funding_mode" in changes or (funding != "own" and "requests_limit" in changes)):
                 raise DomainError("Источник оплаты и лимит общего API меняет главный администратор.", 403)
+            if "monthly_limit" in changes:
+                if billing._active(connection, company_id):
+                    raise DomainError("Измените рублёвый лимит в разделе «Расходы».", 409)
+                if not is_global and (funding != "own" or (company_id == 1 and self._has_salavat_dependents(connection))):
+                    raise DomainError("Рублёвый лимит общей оплаты меняет главный администратор.", 403)
             provider_fields = {"openai_key", "yandex_key", "yandex_folder_id"}
             if not is_global and provider_fields.intersection(changes):
                 if funding != "own" or (company_id == 1 and self._has_salavat_dependents(connection)):
@@ -656,14 +661,16 @@ class Service:
             _, summary = self._usage(connection, company_id, self._company_row(connection, company_id))
             return summary
 
-    def _reserve_generation(self, connection, company, company_id):
+    def _reserve_generation(self, connection, company, company_id, *, kind="text"):
         current = self._company_row(connection, company_id)
         month, summary = self._usage(connection, company_id, current)
         if current["funding_mode"] != "own" and not summary["requests_limit"]:
             raise DomainError("Для общего API нужен месячный лимит запросов.", 422)
         if summary["requests_limit"] and summary["requests"] >= summary["requests_limit"]:
             raise DomainError("Месячный лимит запросов ИИ исчерпан.", 429)
-        return connection.execute("INSERT INTO usage(company_id,month) VALUES(?,?)", (company_id, month)).lastrowid
+        usage_id = connection.execute("INSERT INTO usage(company_id,month) VALUES(?,?)", (company_id, month)).lastrowid
+        billing.reserve_generation(connection, current, month, company, usage_id, kind)
+        return usage_id
 
     @staticmethod
     def _grounding(result, sources):
@@ -751,7 +758,8 @@ class Service:
         )
         try:
             instruction = editorial_instruction(company)
-            result = await integrations.generate_post(company, sources, instruction, credentials)
+            with billing.billing_scope(self.db, text=usage_id):
+                result = await integrations.generate_post(company, sources, instruction, credentials)
             with self.db.transaction() as connection:
                 connection.execute("UPDATE usage SET input_tokens=?,output_tokens=? WHERE id=?",
                                    (result["input_tokens"], result["output_tokens"], usage_id))
@@ -1013,7 +1021,8 @@ class Service:
         with self.db.transaction() as connection:
             audit_row(connection, company_id, "post.published", f"Опубликован пост №{post_id}.", actor)
             return self._update_post(connection, company_id, post_id, status="published",
-                                     message_id=str(result["message_id"]), publication_url=result.get("publication_url"))
+                                     message_id=str(result["message_id"]), publication_url=result.get("publication_url"),
+                                     telegram_chat_id=result.get("telegram_chat_id") if platform == "telegram" else None)
 
     def due_posts(self):
         with self.db.read() as connection:

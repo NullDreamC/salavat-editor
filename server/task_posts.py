@@ -6,6 +6,7 @@ import re
 
 from . import assistant_tasks as tasks
 from .domain import DomainError, audit_row, editorial_instruction, normalize_text, pack
+from .billing import billing_scope
 from .integrations import GenerationError, _Fact, _provider_settings
 from .photo_workflow import apply_photo
 
@@ -237,7 +238,8 @@ async def process_post_request(service, cid, task_id, request_id, attempt_id, *,
             return tasks.task_for_delivery(service, cid, task_id)
         usage = (0, 0)
         try:
-            draft, usage = await tasks._generate(endpoint, headers, payload, Draft)
+            with billing_scope(service.db, text=usage_id):
+                draft, usage = await tasks._generate(endpoint, headers, payload, Draft)
             title, body, brief, facts, questions = _ground(draft, materials, with_image)
         except GenerationError as error:
             usage = usage if usage != (0, 0) else (error.input_tokens, error.output_tokens)

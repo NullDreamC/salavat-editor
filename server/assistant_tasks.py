@@ -9,6 +9,7 @@ import httpx
 from fastapi import Depends
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StringConstraints, model_validator
 
+from .billing import billing_scope, metered_generation
 from .domain import EDITOR_ROLES, DomainError, audit_row, normalize_text, pack, utc_now
 from .integrations import (
     GenerationError,
@@ -627,7 +628,7 @@ def _reserve(service, cid, task_id, company, attempt_id):
 
 async def _generate(endpoint, headers, payload, schema=Generated):
     try:
-        response = await _post_generation(endpoint, headers, payload, _TEXT_TIMEOUT)
+        response = await metered_generation(_post_generation, endpoint, headers, payload, _TEXT_TIMEOUT)
     except (httpx.HTTPError, UnicodeError):
         raise GenerationError("Не удалось связаться с сервисом генерации. Проверьте подключение.") from None
     if not response.is_success:
@@ -792,7 +793,8 @@ async def process_tasks(service, cid, *, on_started=None, on_post_image=None):
         usage_id = _reserve(service, cid, task_id, company, attempt_id)
         if usage_id is None:
             return task_for_delivery(service, cid, task_id)
-        generated, usage = await _generate(endpoint, headers, payload)
+        with billing_scope(service.db, text=usage_id):
+            generated, usage = await _generate(endpoint, headers, payload)
         answer = _ground(generated, sources, item["kind"])
     except asyncio.CancelledError:
         _finish(service, cid, task_id, attempt_id, "interrupted", error=INTERRUPTED, usage_id=usage_id, usage=usage)

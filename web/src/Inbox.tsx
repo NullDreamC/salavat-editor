@@ -167,7 +167,9 @@ function ItemDialog({ item, company, path, onClose, onSaved, onReload }: {
       <div className="data-copy">
         <strong>{platforms[item.platform]}{item.author && ` · ${item.author}`}</strong>
         <small>{fullDate(item.created_at, company.timezone)} · {item.sending ? 'Отправляется' : item.generating ? 'Готовится ответ' : statuses[item.status]}</small>
-        {item.reference && <small>{item.reference}</small>}
+        {item.reference && <small>{item.platform === 'telegram' && /^https:\/\/t\.me\//i.test(item.reference)
+          ? <a href={item.reference} target="_blank" rel="noreferrer">Открыть комментарий в Telegram</a>
+          : item.reference}</small>}
       </div>
       <p className="material-text">{item.body}</p>
       {!!item.questions.length && <section><strong>Что нужно уточнить</strong>
@@ -183,7 +185,9 @@ function ItemDialog({ item, company, path, onClose, onSaved, onReload }: {
           <button className="button secondary" disabled={action.busy}>Сохранить черновик</button>
         </div>
       </form> : item.reply && <section><strong>Ответ</strong><p className="material-text">{item.reply}</p></section>}
-      {item.status === 'approved' && !item.can_send && <small className="muted">Отправка из редакции доступна для комментариев, загруженных с подключённой площадки.</small>}
+      {item.status === 'approved' && !item.can_send && <small className="muted">{item.platform === 'telegram'
+        ? 'Ответ на комментарий можно отправить в Telegram.'
+        : 'Отправка из редакции доступна для комментариев, загруженных с подключённой площадки.'}</small>}
       <ErrorMessage message={action.error || item.send_error || ''} />
       {confirmSend && <p>Ответ будет опубликован под комментарием на площадке {platforms[item.platform]}.</p>}
       <div className="modal-actions">

@@ -7,7 +7,7 @@ import asyncio
 from fastapi import Depends, Query
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .analytics import COUNT_FIELDS, MEMBER_ROLES, _rollup
+from .analytics import COUNT_FIELDS, MEMBER_ROLES, _rollup, read_observations
 from .domain import EDITOR_ROLES, DomainError, audit_row
 from .integrations import TelegramError
 
@@ -260,15 +260,8 @@ def disable_report_schedule(service, cid, actor, schedule_id, *, expected_versio
 
 
 def _telegram_metrics(connection, cid, start, end, local_today, now):
-    rows = connection.execute("""WITH ranked AS (
-        SELECT published_on, observed_on, views, reach, reactions, comments, shares,
-               ROW_NUMBER() OVER (PARTITION BY publication_id
-                                  ORDER BY observed_on DESC, recorded_at DESC, id DESC) AS rank
-        FROM analytics_metrics
-        WHERE company_id=? AND platform='telegram' AND observed_on<=? AND julianday(recorded_at)<=julianday(?)
-    )
-    SELECT * FROM ranked WHERE rank=1 AND published_on BETWEEN ? AND ?
-    """, (cid, local_today.isoformat(), _timestamp(now), start.isoformat(), end.isoformat())).fetchall()
+    rows = read_observations(connection, cid, start, end, platform="telegram",
+                             observed_through=local_today.isoformat(), recorded_through=_timestamp(now))
     return rows, _rollup(rows)
 
 
@@ -310,8 +303,9 @@ def _report_data(connection, company, end_exclusive, days, now):
         "Telegram · публикации за период",
     ]
     if rows:
-        first_observation = date.fromisoformat(min(row["observed_on"] for row in rows))
-        last_observation = date.fromisoformat(max(row["observed_on"] for row in rows))
+        observation_dates = [entry["observed_on"] for row in rows for entry in row["metric_observations"].values()]
+        first_observation = date.fromisoformat(min(observation_dates))
+        last_observation = date.fromisoformat(max(observation_dates))
         observed = f"{first_observation:%d.%m.%Y}"
         if first_observation != last_observation:
             observed += f" — {last_observation:%d.%m.%Y}"

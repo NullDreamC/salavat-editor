@@ -16,6 +16,7 @@ from typing import Any
 import httpx
 from PIL import Image, ImageOps
 from pydantic import BaseModel, ConfigDict
+from .billing import metered_generation
 from .brand_images import MAX_PHOTO_PIXELS, BrandImageError, LogoPlacement, apply_brand, prepare_brand
 from .network import http_options
 
@@ -131,25 +132,28 @@ def _read_openai_fallback() -> str:
     return match[2] if match else ""
 
 
+def _provider_model(company: dict) -> str:
+    return (company.get("model") or "").strip() or ("qwen3.6-35b-a3b" if company.get("provider") == "yandex" else "gpt-4.1-mini")
+
+
 def _provider_settings(
     company: dict, credentials: dict
 ) -> tuple[str, str, dict[str, str]]:
     provider = company.get("provider")
-    model = (company.get("model") or "").strip()
+    model = _provider_model(company)
     if provider == "openai":
         key = (credentials.get("openai_key") or "").strip()
         if not key and company.get("allow_openai_fallback") is True:
             key = _read_openai_fallback()
         if not key:
             raise GenerationError("Укажите ключ OpenAI в настройках компании.")
-        return _OPENAI_RESPONSES, model or "gpt-4.1-mini", {"Authorization": f"Bearer {key}"}
+        return _OPENAI_RESPONSES, model, {"Authorization": f"Bearer {key}"}
 
     if provider == "yandex":
         key = (credentials.get("yandex_key") or "").strip()
         folder = (company.get("yandex_folder_id") or "").strip()
         if not key or not folder:
             raise GenerationError("Укажите ключ Yandex AI Studio и ID каталога в настройках компании.")
-        model = model or "qwen3.6-35b-a3b"
         prefix = f"gpt://{folder}/"
         if model.startswith("gpt://") and not model.startswith(prefix):
             raise GenerationError("Каталог модели Yandex AI Studio должен совпадать с настройками компании.")
@@ -435,7 +439,7 @@ async def generate_post(
         "max_output_tokens": 4500,
     }
     try:
-        response = await _post_generation(endpoint, headers, payload, _TEXT_TIMEOUT)
+        response = await metered_generation(_post_generation, endpoint, headers, payload, _TEXT_TIMEOUT)
     except (httpx.HTTPError, UnicodeError):
         raise GenerationError("Не удалось связаться с сервисом генерации. Проверьте подключение.") from None
     if not response.is_success:
@@ -564,7 +568,7 @@ async def generate_photo(
         "store": False,
     }
     try:
-        response = await _post_generation(endpoint, headers, payload, _PHOTO_TIMEOUT)
+        response = await metered_generation(_post_generation, endpoint, headers, payload, _PHOTO_TIMEOUT, kind="image")
     except (httpx.HTTPError, UnicodeError):
         raise GenerationError("Не удалось получить изображение от OpenAI. Проверьте подключение.") from None
     if not response.is_success:
@@ -593,12 +597,14 @@ async def generate_photo(
     result = {"image_bytes": photo, "original_bytes": photo, "input_tokens": input_tokens,
               "output_tokens": output_tokens, "layout_input_tokens": 0, "layout_output_tokens": 0,
               "logo_placement": None}
+    from .domain import DomainError
+
     try:
         placement, tokens_in, tokens_out = await _logo_placement(endpoint, model, headers, photo, brand, instruction)
         result.update(layout_input_tokens=tokens_in, layout_output_tokens=tokens_out)
         result['image_bytes'] = await asyncio.to_thread(apply_brand, photo, brand, placement)
         result['logo_placement'] = placement.model_dump()
-    except (GenerationError, BrandImageError):
+    except (GenerationError, BrandImageError, DomainError):
         # Keep paid artwork usable if automatic layout fails; manual controls remain available.
         result['logo_error'] = True
     return result
@@ -648,7 +654,7 @@ async def _logo_placement(endpoint, model, headers, photo, brand, instruction):
         'max_output_tokens': 1000,
     }
     try:
-        response = await _post_generation(endpoint, headers, payload, _TEXT_TIMEOUT)
+        response = await metered_generation(_post_generation, endpoint, headers, payload, _TEXT_TIMEOUT, kind="layout")
         if not response.is_success:
             raise _generation_http_error(response.status_code)
         result = response.json()
@@ -803,7 +809,12 @@ async def publish_telegram(token: str, channel_id: str, body: str, media: list[d
 
     if not isinstance(result, dict) or type(result.get("message_id")) is not int or not result["message_id"]:
         raise _telegram_error(None)
-    return {"message_id": result["message_id"], "publication_url": _publication_url(channel_id, result)}
+    publication = {"message_id": result["message_id"], "publication_url": _publication_url(channel_id, result)}
+    chat = result.get("chat")
+    peer_id = str(chat.get("id") or "") if isinstance(chat, dict) else ""
+    if re.fullmatch(r"-[0-9]{13}", peer_id) and -1_997_852_516_352 <= int(peer_id) <= -1_000_000_000_001:
+        publication["telegram_chat_id"] = peer_id
+    return publication
 
 
 def message_is_addressed(message: dict, bot_username: str, bot_id: int | None = None) -> bool:

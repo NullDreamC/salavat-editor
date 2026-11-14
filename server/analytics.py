@@ -146,21 +146,25 @@ def store_metrics(service, cid, rows, origin, actor, *, synced_connection=None, 
             if not current["enabled"] or any(current[field] != synced_connection[field] for field in ("destination_id", "token")):
                 raise DomainError("Подключение площадки изменилось. Повторите запрос.", 409)
         for row in rows:
-            _check_link(service, connection, cid, row)
-            connection.execute("""INSERT INTO analytics_metrics (
-                company_id, platform, publication_id, title, format, published_on, observed_on,
-                source, origin, post_id, views, reach, reactions, comments, shares, recorded_at
-                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                ON CONFLICT (company_id, platform, publication_id, observed_on, origin, source) DO UPDATE SET
-                title=excluded.title, format=excluded.format, published_on=excluded.published_on,
-                post_id=excluded.post_id, views=excluded.views, reach=excluded.reach, reactions=excluded.reactions,
-                comments=excluded.comments, shares=excluded.shares, recorded_at=excluded.recorded_at""", (
-                cid, row.platform, row.publication_id, row.title, row.format, row.published_on.isoformat(),
-                row.observed_on.isoformat(), row.source, origin, row.post_id, *(getattr(row, field) for field in COUNT_FIELDS),
-                written_at,
-            ))
+            write_observation(service, connection, cid, row, origin, written_at)
         audit_row(connection, cid, "analytics.metrics_recorded", f"Записано замеров: {len(rows)}.", actor)
     return {"recorded": len(rows)}
+
+
+def write_observation(service, connection, cid, row, origin, recorded_at):
+    _check_link(service, connection, cid, row)
+    return connection.execute("""INSERT INTO analytics_metrics (
+        company_id, platform, publication_id, title, format, published_on, observed_on,
+        source, origin, post_id, views, reach, reactions, comments, shares, recorded_at
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ON CONFLICT (company_id, platform, publication_id, observed_on, origin, source) DO UPDATE SET
+        title=excluded.title, format=excluded.format, published_on=excluded.published_on,
+        post_id=excluded.post_id, views=excluded.views, reach=excluded.reach, reactions=excluded.reactions,
+        comments=excluded.comments, shares=excluded.shares, recorded_at=excluded.recorded_at""", (
+        cid, row.platform, row.publication_id, row.title, row.format, row.published_on.isoformat(),
+        row.observed_on.isoformat(), row.source, origin, row.post_id, *(getattr(row, field) for field in COUNT_FIELDS),
+        recorded_at,
+    )).rowcount
 
 
 async def sync_metrics(service, cid, payload, actor, *, destination=None, skip_empty=False, access_check=None):
@@ -208,10 +212,11 @@ def _rollup(items):
             if value is not None:
                 coverage[field] += 1
                 totals[field] = (totals[field] or 0) + value
-        if item["reach"] and all(item[field] is not None for field in ("reactions", "comments", "shares")):
+        er_item = item.get("_latest_snapshot", item) if isinstance(item, dict) else item
+        if er_item["reach"] and all(er_item[field] is not None for field in ("reactions", "comments", "shares")):
             er_posts += 1
-            er_reach += item["reach"]
-            er_interactions += item["reactions"] + item["comments"] + item["shares"]
+            er_reach += er_item["reach"]
+            er_interactions += er_item["reactions"] + er_item["comments"] + er_item["shares"]
     return {"publications": len(items), "coverage": coverage, "totals": totals,
             "er": {"percent": round(100 * er_interactions / er_reach, 2) if er_reach else None,
                    "denominator": "reach", "reach": er_reach if er_posts else None,
@@ -250,29 +255,60 @@ def _report(summary, formats):
 def analytics_report(service, cid, start, end, actor):
     if start and end and start > end:
         raise DomainError("Конец периода должен быть не раньше начала.", 422)
-    start_value = start.isoformat() if start else None
-    end_value = end.isoformat() if end else None
     with service.db.read() as connection:
         service.require_actor(connection, cid, actor, MEMBER_ROLES)
-        rows = connection.execute("""WITH ranked AS (
-            SELECT platform, publication_id, title, format, published_on, observed_on, source, origin,
-                   post_id, views, reach, reactions, comments, shares,
-                   ROW_NUMBER() OVER (PARTITION BY platform, publication_id
-                                      ORDER BY observed_on DESC, recorded_at DESC, id DESC) AS snapshot_rank
-            FROM analytics_metrics WHERE company_id=?
-        )
-        SELECT platform, publication_id, title, format, published_on, observed_on, source, origin, post_id,
-               views, reach, reactions, comments, shares
-        FROM ranked WHERE snapshot_rank=1 AND (? IS NULL OR published_on>=?) AND (? IS NULL OR published_on<=?)
-        ORDER BY published_on DESC, platform, publication_id""", (cid, start_value, start_value, end_value, end_value)).fetchall()
-    items = [dict(row) for row in rows]
+        items = read_observations(connection, cid, start, end)
     grouped = {}
     for item in items:
         grouped.setdefault(item["format"], []).append(item)
     summary = _rollup(items)
     formats = [{"format": name, **_rollup(members)} for name, members in sorted(grouped.items())]
+    for item in items:
+        item.pop("_latest_snapshot", None)
     return {"items": items, "summary": summary, "formats": formats, "report": _report(summary, formats),
             "er_formula": ER_FORMULA}
+
+
+def read_observations(connection, cid, start, end, *, platform=None, observed_through=None, recorded_through=None):
+    start_value = start.isoformat() if start else None
+    end_value = end.isoformat() if end else None
+    rows = connection.execute("""WITH eligible AS (
+            SELECT * FROM analytics_metrics WHERE company_id=? AND (? IS NULL OR platform=?)
+                AND (? IS NULL OR observed_on<=?) AND (? IS NULL OR julianday(recorded_at)<=julianday(?))
+        ), ranked AS (
+            SELECT platform, publication_id, title, format, published_on, observed_on, source, origin,
+                   post_id, views, reach, reactions, comments, shares,
+                   ROW_NUMBER() OVER (PARTITION BY platform, publication_id
+                                      ORDER BY observed_on DESC, recorded_at DESC, id DESC) AS snapshot_rank
+            FROM eligible
+        ), latest AS (
+            SELECT * FROM ranked WHERE snapshot_rank=1 AND (? IS NULL OR published_on>=?) AND (? IS NULL OR published_on<=?)
+        )
+        SELECT ranked.* FROM latest JOIN ranked USING (platform, publication_id)
+        WHERE ranked.snapshot_rank=1 OR latest.platform='telegram'
+        ORDER BY latest.published_on DESC, latest.platform, latest.publication_id, ranked.snapshot_rank""",
+        (cid, platform, platform, observed_through, observed_through, recorded_through, recorded_through,
+         start_value, start_value, end_value, end_value))
+    publications = {}
+    for row in rows:
+        key = row["platform"], row["publication_id"]
+        if row["snapshot_rank"] == 1:
+            item = dict(row)
+            item.pop("snapshot_rank")
+            if row["platform"] == "telegram":
+                item["_latest_snapshot"] = {field: row[field] for field in COUNT_FIELDS}
+                item["metric_observations"] = {
+                    field: {"observed_on": row["observed_on"], "source": row["source"]}
+                    for field in COUNT_FIELDS if row[field] is not None
+                }
+            publications[key] = item
+            continue
+        item = publications[key]
+        for field in COUNT_FIELDS:
+            if item[field] is None and row[field] is not None:
+                item[field] = row[field]
+                item["metric_observations"][field] = {"observed_on": row["observed_on"], "source": row["source"]}
+    return list(publications.values())
 
 
 def register_analytics_routes(api, service, member, editor):

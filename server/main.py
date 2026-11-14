@@ -26,6 +26,12 @@ from .inbox import initialize_inbox, register_inbox_routes, recover_inbox_sends
 from .assistant_tasks import initialize_tasks, register_task_routes
 from .review_policy import initialize_review_policy, register_review_policy_routes
 from .reports import initialize_reports, register_report_routes
+from .research import initialize_research, register_research_routes
+from .strategy import initialize_strategy, register_strategy_routes
+from .telegram_observation import initialize_telegram_observation, register_telegram_observation_routes
+from .attribution import initialize_attribution, register_attribution_routes, is_attribution_webhook
+from .billing import register_billing_routes
+from . import crm
 
 
 COOKIE = "salavat_session"
@@ -244,6 +250,11 @@ def create_app(db=None, *, start_worker=False):
         initialize_tasks(service)
         initialize_review_policy(service)
         initialize_reports(service)
+        initialize_research(service)
+        initialize_strategy(service)
+        initialize_telegram_observation(service)
+        initialize_attribution(service)
+        crm.initialize(db)
         if start_worker:
             recover_inbox_sends(service)
         worker_task = None
@@ -285,7 +296,8 @@ def create_app(db=None, *, start_worker=False):
                 return JSONResponse({'detail': 'Слишком много попыток входа. Подождите минуту.'}, status_code=429,
                                     headers={'Retry-After': '60', 'Cache-Control': 'no-store'})
             attempts.append(now)
-        if request.url.path.startswith("/api/") and request.method not in {"GET", "HEAD", "OPTIONS"}:
+        if (request.url.path.startswith("/api/") and request.method not in {"GET", "HEAD", "OPTIONS"}
+                and not is_attribution_webhook(request)):
             try:
                 valid_origin = same_origin(request)
             except ValueError:
@@ -820,6 +832,12 @@ def create_app(db=None, *, start_worker=False):
     register_task_routes(api, service, member, editor)
     register_review_policy_routes(api, service, company_manager, approver)
     register_report_routes(api, service, member, editor)
+    register_research_routes(api, service, member, editor)
+    register_strategy_routes(api, service, member, editor)
+    register_telegram_observation_routes(api, service, member, editor)
+    register_attribution_routes(api, service, member, editor, admin)
+    register_billing_routes(api, service, company_manager, require_global_admin)
+    crm.register_crm_routes(api, service, admin)
     app.include_router(api)
 
     @app.get("/{path:path}", include_in_schema=False)

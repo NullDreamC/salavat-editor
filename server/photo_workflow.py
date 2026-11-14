@@ -7,7 +7,7 @@ from typing import Annotated, Literal
 from fastapi import Depends
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from . import integrations
+from . import billing, integrations
 from .brand_images import BrandImageError, load_brand_config, prepare_brand
 from .domain import EDITOR_ROLES, DomainError, audit_row, pack, upload_content
 
@@ -133,10 +133,11 @@ async def apply_photo(service, company_id, post_id, version, mode, instruction="
             prepare_brand(company)
         except BrandImageError as error:
             raise DomainError(str(error), 422) from error
-        usage_id = service._reserve_generation(connection, company, company_id)
-        layout_usage_id = service._reserve_generation(connection, company, company_id)
+        usage_id = service._reserve_generation(connection, company, company_id, kind="image")
+        layout_usage_id = service._reserve_generation(connection, company, company_id, kind="layout")
     try:
-        result = await integrations.generate_photo(company, sources, instruction, credentials)
+        with billing.billing_scope(service.db, image=usage_id, layout=layout_usage_id):
+            result = await integrations.generate_photo(company, sources, instruction, credentials)
     except integrations.GenerationError as error:
         with service.db.transaction() as connection:
             connection.execute("UPDATE usage SET input_tokens=?,output_tokens=? WHERE id=?",

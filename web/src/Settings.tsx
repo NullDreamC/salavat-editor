@@ -73,7 +73,6 @@ function SettingsForm({ value, path, onSaved }: { value: Settings; path: string;
           ...(isSuper && { funding_mode: funding }),
           editorial_rules: formText(form, 'editorial_rules'),
           channel_id: formText(form, 'channel_id'), chat_id: formText(form, 'chat_id'), bot_username: formText(form, 'bot_username'),
-          monthly_limit: Number(formText(form, 'monthly_limit')),
           ...(canEditLimit && { requests_limit: Number(requestLimit) }),
           ...secrets,
         })
@@ -137,7 +136,6 @@ function SettingsForm({ value, path, onSaved }: { value: Settings; path: string;
         <label>Запросы<input type="number" name="requests_limit" min={funding === 'own' ? 0 : 1} max={1_000_000_000}
           step={1} value={requestLimit} disabled={!canEditLimit} required={funding !== 'own'}
           onChange={(event) => setRequestLimit(event.target.value)} /></label>
-        <label>Бюджет, ₽<input type="number" name="monthly_limit" min={0} step={1} defaultValue={value.monthly_limit} /></label>
         <small className="muted">{funding === 'own' ? '0 — без ограничения запросов' : 'Лимит для компании'}</small>
         <small className="muted">Фактические списания — у провайдера.</small>
       </div>
@@ -327,7 +325,6 @@ export function ActivityPage({ company }: { company: Company }) {
       {volume ? <dl>
         <div><dt>Запросы</dt><dd>{number.format(volume.requests)}{volume.requests_limit > 0 && <small> / {number.format(volume.requests_limit)}</small>}</dd></div>
         <div><dt>Токены</dt><dd>{number.format(volume.input_tokens + volume.output_tokens)}</dd></div>
-        {volume.monthly_limit > 0 && <div><dt>Бюджет, ₽</dt><dd>{number.format(volume.monthly_limit)}</dd></div>}
       </dl> : !usage.error && <Loading />}
     </section>
     <h2 className="section-title">Действия</h2>

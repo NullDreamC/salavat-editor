@@ -6,13 +6,23 @@
   },
   {
     "path": "CONTRACT.md",
-    "bytes": 22157,
-    "sha256": "a62c678e9555137532fe90c2089e09c9b233db6262afd795c38e2d70aada52ad"
+    "bytes": 26144,
+    "sha256": "d9f884d976d4b6049d9c8c1a75d58f4c095612eba82930efd43065e63a8b6175"
   },
   {
     "path": "docs/API_соцсетей.md",
     "bytes": 6228,
     "sha256": "ff46e5e49ef5f15d05f7cc50de39365edf365a7de1f0141cab71226612d64536"
+  },
+  {
+    "path": "docs/Месячная_стоимость.md",
+    "bytes": 10005,
+    "sha256": "373bdd6ad0ebc3b7198672c801a39c7beef8cc7afc617c70569034efd0cd5f30"
+  },
+  {
+    "path": "docs/Подключение_аналитики.md",
+    "bytes": 11685,
+    "sha256": "c2491e67d3fd12369bd9950be9fabe3df3d35b80903a341d728cd699e743527a"
   },
   {
     "path": "docs/Поручения_и_отчёты.md",
@@ -26,18 +36,23 @@
   },
   {
     "path": "docs/Статус_ТЗ.md",
-    "bytes": 9365,
-    "sha256": "face6c7d59000b8b09e02ac6bcd7a588c8ee4701488cb8f757d38ba3188aa0a5"
+    "bytes": 10697,
+    "sha256": "1fd334fe8142e5db5c3fc622c41673714815c15257ce5d0eb0d1a8a04262c122"
   },
   {
     "path": "README.md",
-    "bytes": 33430,
-    "sha256": "fdf718813f89b0068958a347e8006304fc482028135bad565dd345453eb49ed1"
+    "bytes": 35206,
+    "sha256": "ee45d2177824105925a60c806a53c7a595ffac36090142bb9781192cde67e914"
   },
   {
     "path": "requirements-dev.txt",
     "bytes": 44,
     "sha256": "da4f200fa35c963f8086a124facca8d4ef9024e522fbb6aa9b04c13d9d0f6bf0"
+  },
+  {
+    "path": "requirements-telegram.txt",
+    "bytes": 18,
+    "sha256": "7232a8a0ff4507a759e0fe0c901b247cd3ce9df800f75d944c36d4eedf4dbc7e"
   },
   {
     "path": "requirements.lock.txt",
@@ -51,18 +66,28 @@
   },
   {
     "path": "scripts/package_release.py",
-    "bytes": 3874,
-    "sha256": "3e394c0595ee67e2eefeabc19f9a39e8aef1f3d03a87c6cfad48dd2a37488a68"
+    "bytes": 3903,
+    "sha256": "bd0f83ed14804f6871845d530006eafc0ca103b4ad276c59bcc34faf2a668165"
   },
   {
     "path": "server/analytics.py",
-    "bytes": 15700,
-    "sha256": "5c30fb010bc934d39e75ffb876ddee85e68dc4ca72cee2894deea46cb7ae3e52"
+    "bytes": 17382,
+    "sha256": "9356d086565e06dbcc11e74f18c217d2438c2dfb61fec1d911cba22a79d7e567"
   },
   {
     "path": "server/assistant_tasks.py",
-    "bytes": 50924,
-    "sha256": "2b788eea07a8aad88dcd2a1cdce41093cc245807112aa2f442ead985bec0a7e6"
+    "bytes": 51058,
+    "sha256": "8b1f9bb0a9139f5beeb4297e9658a412a02eeb37768b30b998e8c77ac5a3814b"
+  },
+  {
+    "path": "server/attribution.py",
+    "bytes": 24768,
+    "sha256": "9d8f55838b6101e96c01c21a48a1136c21e14cc6b0ecfa784410c2408b5c74d3"
+  },
+  {
+    "path": "server/billing.py",
+    "bytes": 35173,
+    "sha256": "c42b03cfb79921046535ce6096d860987ba6fa222e55cb636b09f62c809ca9b6"
   },
   {
     "path": "server/bot_progress.py",
@@ -85,29 +110,34 @@
     "sha256": "6a1814cd16230d402e3c984bb363cda21ea5511c76f5a9d974732e04c3095645"
   },
   {
+    "path": "server/crm.py",
+    "bytes": 29034,
+    "sha256": "f726fbf6ab8d63331845aa2a171cc7fbb03d09db8cd17fa42859eede817d1af6"
+  },
+  {
     "path": "server/db.py",
-    "bytes": 11293,
-    "sha256": "a65d6c947290613aa608b255d37821d481b76da633ef8169d8be372240828230"
+    "bytes": 11617,
+    "sha256": "f30eb23ab7cca984ed116c8ed4cf7a99aac12de0af82ed79c67a1359a884d2fa"
   },
   {
     "path": "server/domain.py",
-    "bytes": 65630,
-    "sha256": "3ce8889ffaedae2bd29d61029536f8a132e7ebd37d9e853234f8fddeca173661"
+    "bytes": 66470,
+    "sha256": "8aa6b5633f049b8c63a55de059a17040b03df15718d40589a96e2000964adfaa"
   },
   {
     "path": "server/inbox.py",
-    "bytes": 36865,
-    "sha256": "99ec825e9fd9120b3672e8305048bbea1a844f699d137a99727aba61211408ac"
+    "bytes": 37025,
+    "sha256": "80b5ec73a4c965dcc2ced57b1afadb2849b140070ca07319a9649aadcc021810"
   },
   {
     "path": "server/integrations.py",
-    "bytes": 48265,
-    "sha256": "ff9c5fdf63e4fa464cff09918a960e9e1f2aad4846ede56cbe728cc1abdc1b1c"
+    "bytes": 48836,
+    "sha256": "87dc897a287f6f248848479085786e8f9ba05c7fdc9d18d91050bd5852d52e6d"
   },
   {
     "path": "server/knowledge.py",
-    "bytes": 14837,
-    "sha256": "f25e9c0b5a9ad0ca1bbd292fea9aeb714e021aa717e51c1c229a8d881a09c426"
+    "bytes": 15212,
+    "sha256": "0f4cb3b5b9bbf313281f5b959919a4aa01bb402e7ed17e9325387c8a6fea0549"
   },
   {
     "path": "server/logo_workflow.py",
@@ -116,8 +146,8 @@
   },
   {
     "path": "server/main.py",
-    "bytes": 44733,
-    "sha256": "29232803ac8febb7830e8bda38aab90e9c8f6439c63a28a798f7cb2904ebe14f"
+    "bytes": 45773,
+    "sha256": "cf5be81f15793e040a266673825632c4ee5cd5f285fb4df55612901b8f0c43da"
   },
   {
     "path": "server/network.py",
@@ -126,8 +156,8 @@
   },
   {
     "path": "server/photo_workflow.py",
-    "bytes": 11186,
-    "sha256": "baf72a0b72ddc2238be4b52a599290eb38374accc17dbdce997dc103b98e5588"
+    "bytes": 11316,
+    "sha256": "8656c2700de8363fa36fcf83e6873e0aefc7b03aed969346ca2aa2a8a98e6fde"
   },
   {
     "path": "server/post_edits.py",
@@ -136,8 +166,13 @@
   },
   {
     "path": "server/reports.py",
-    "bytes": 32630,
-    "sha256": "9dd8d5324e5991f673ceb078717e29b718010a271d980f81d75803b7d379602a"
+    "bytes": 32298,
+    "sha256": "41b30e929a605716dd4265bd46ee1b72f07344fb04951d73a30f16b4b399e74e"
+  },
+  {
+    "path": "server/research.py",
+    "bytes": 44520,
+    "sha256": "fa44b001d95b5bae1900fe7f7ecc3e9f867a59752df0ef5f236b3369eace73b7"
   },
   {
     "path": "server/review_policy.py",
@@ -155,9 +190,14 @@
     "sha256": "bd1b2a155e80094b05c630b1cd943bcdc6765e9cc82d7bf9130000909ba2d845"
   },
   {
+    "path": "server/strategy.py",
+    "bytes": 16835,
+    "sha256": "c0e51041b6aa243813a3c377cd663b68147903442788b31dc96e93c17bb5cac5"
+  },
+  {
     "path": "server/task_posts.py",
-    "bytes": 19053,
-    "sha256": "1a8e492864ad8db328cb561450d9b0c14980bf03ee16a93e77b4c5380c12ba89"
+    "bytes": 19151,
+    "sha256": "8522233ee42a1999732799ddc6b7474ed190a919e495cfa132de111298b5be6e"
   },
   {
     "path": "server/telegram_intents.py",
@@ -168,6 +208,11 @@
     "path": "server/telegram_link.py",
     "bytes": 6180,
     "sha256": "15c842a12ab296884390167112a47b6aeb65bca12877233d451bd6ac4d67e7ba"
+  },
+  {
+    "path": "server/telegram_observation.py",
+    "bytes": 36746,
+    "sha256": "dabf2b5412e388d4d816979dcca7be165201b123a4ae7d9a625e0c05e4ced828"
   },
   {
     "path": "server/tunnel_runner.py",
@@ -186,8 +231,8 @@
   },
   {
     "path": "server/worker.py",
-    "bytes": 73116,
-    "sha256": "a8dc6ae711ec862937af538b43ea62212ea96e2530a36a2b5b396c065a1e7ae0"
+    "bytes": 75023,
+    "sha256": "6773cf05b797e19c0b5be6d64c9f84c7a07ec6db34baa2b087ddd1f2831a574a"
   },
   {
     "path": "start.cmd",
@@ -220,9 +265,19 @@
     "sha256": "945ac74d51769dce598d6b153a04e54aae0dc55c48fafd4755bbfb77f1f4f03d"
   },
   {
+    "path": "tests/test_attribution.py",
+    "bytes": 11933,
+    "sha256": "1d2ad053b22031967b0d632146f9a9e700ced8f3b64ac2a68bd90d75aefe2405"
+  },
+  {
     "path": "tests/test_backend.py",
     "bytes": 15600,
     "sha256": "258a19b553a05ba1701119fd3bec0e756c4cc77f032ba8c07623cbeac39a95ea"
+  },
+  {
+    "path": "tests/test_billing.py",
+    "bytes": 14797,
+    "sha256": "11441415d6415336056410bddd986bcee48f5aa8a1dedfcd91d739060020a481"
   },
   {
     "path": "tests/test_bot_progress.py",
@@ -243,6 +298,11 @@
     "path": "tests/test_company_controls.py",
     "bytes": 9037,
     "sha256": "5dea6062e2ac36ada7e7e09856475bf725cbc737cbd9e1648aa4234609f45475"
+  },
+  {
+    "path": "tests/test_crm.py",
+    "bytes": 11301,
+    "sha256": "3a76a5c116491448970434a0eada059e20130a4b4db358b7e3cd1580fd8746fd"
   },
   {
     "path": "tests/test_editor_approval.py",
@@ -290,6 +350,11 @@
     "sha256": "3d714eac7b59b9115fdf9327846197c1b521d29ec63e4bcb3dcdc58241791fb4"
   },
   {
+    "path": "tests/test_operations_access.py",
+    "bytes": 2312,
+    "sha256": "ae9e907f09a37a8988cbe4852230da6e3d533c88685f48e63a61cbd0ea831e62"
+  },
+  {
     "path": "tests/test_passwords.py",
     "bytes": 5846,
     "sha256": "1f20c5e4b5e74ac1200571ffbb1495bbb032df62f47db1284773319eaf5fad3c"
@@ -315,6 +380,11 @@
     "sha256": "66dce3fcfe1d42956ee1f141e2c42a758d7e31266349f41332dca40f6d2b141d"
   },
   {
+    "path": "tests/test_research.py",
+    "bytes": 11871,
+    "sha256": "214ab37b92af73f468cc6136f62e26f95bc1649d2f1302cd6fc6becde32aadf6"
+  },
+  {
     "path": "tests/test_review.py",
     "bytes": 6357,
     "sha256": "c1ae284b9434f995dc6888e12df5bf96587ff4bdcc84d2fad118b7e79d0318d1"
@@ -333,6 +403,11 @@
     "path": "tests/test_social_platforms.py",
     "bytes": 17428,
     "sha256": "457c7b6ce924cb9a0aae2cccbe0c8bfbf49a308698aa4b315e1b24debcc27301"
+  },
+  {
+    "path": "tests/test_strategy.py",
+    "bytes": 7426,
+    "sha256": "c0d6455e293f4c6ed3caf364544da06014e3e8e2f4bb60e5516ec39329c1bb89"
   },
   {
     "path": "tests/test_task_post_delivery.py",
@@ -360,6 +435,11 @@
     "sha256": "986242b7405812fa9d714fa5658ae2fb12434fb3544633070649cc6c3202874e"
   },
   {
+    "path": "tests/test_telegram_observation.py",
+    "bytes": 11895,
+    "sha256": "8d3d067cd27185dcd37d2444cd9293a9ccdb71c8aba32057ee593c1100d6236d"
+  },
+  {
     "path": "tests/test_webapp.py",
     "bytes": 5620,
     "sha256": "853590e9d044ab83cfabc7e0b2f9b102be4fbebccd39e53cf892fb86a826f03f"
@@ -385,9 +465,9 @@
     "sha256": "83369e196d1432a05215660a0b7f2d11cb270756f9aafb5ba626518b3a354fcb"
   },
   {
-    "path": "web/dist/assets/index-fcmEMlOV.js",
-    "bytes": 345460,
-    "sha256": "180ba2de891d5831a7cba81d9e21f506ae0875f142d4cb3bc937d6a4a9f47eb6"
+    "path": "web/dist/assets/index-Dupn8D79.js",
+    "bytes": 399529,
+    "sha256": "788ebd24b209873565dff0398ea17eef803401b3f864a1d20d1e17258a319e0a"
   },
   {
     "path": "web/dist/fonts/avenirnextcyr-demi.ttf",
@@ -402,7 +482,7 @@
   {
     "path": "web/dist/index.html",
     "bytes": 481,
-    "sha256": "56a7126d0cb7c28932efeb9dabe647bd529ffe15821e36802b96664ea2823a1b"
+    "sha256": "39723afa8fcf4cc0b022b8b2c6e39d2b9a39550d0493d3d6021b24a43aa20716"
   },
   {
     "path": "web/index.html",
@@ -436,8 +516,8 @@
   },
   {
     "path": "web/src/Analytics.tsx",
-    "bytes": 10340,
-    "sha256": "1c7f17706cd66e6ed21082f6d74e8e5c33934b023bf595b8320314e9eb2707df"
+    "bytes": 11750,
+    "sha256": "01a8c2e502402e2fb858b927c56b35f25f36d26727dc3a8a0105fff67285a31d"
   },
   {
     "path": "web/src/api.ts",
@@ -446,13 +526,23 @@
   },
   {
     "path": "web/src/App.tsx",
-    "bytes": 13093,
-    "sha256": "6e168d8e8cd41ce30f99b05e20710c5788c8a7fc222e66bfb07d21b209ed7a1d"
+    "bytes": 13461,
+    "sha256": "4cbf6e9090e9335364c664c9df087d6f3e4a8495a43ff47c2b0dcdfd306c5f78"
   },
   {
     "path": "web/src/AssistantTasks.tsx",
     "bytes": 11708,
     "sha256": "3c1f5a433cf6a5851410353be9ea80d9f4fb77c70340fa946e7406e50ed444b9"
+  },
+  {
+    "path": "web/src/Attribution.tsx",
+    "bytes": 16567,
+    "sha256": "942a1e92996f934bc77e658a4312a7a64b843eae1a78beef647cf5e247ec2c09"
+  },
+  {
+    "path": "web/src/Billing.tsx",
+    "bytes": 22086,
+    "sha256": "2a5fbaa4f0ca30a69350e64ec9008ddfcce6e273c4a54d7a851733e374a6ae43"
   },
   {
     "path": "web/src/BrandSettings.tsx",
@@ -466,13 +556,18 @@
   },
   {
     "path": "web/src/ContentPlan.tsx",
-    "bytes": 14005,
-    "sha256": "7dce73fc4e46649c4bcdd54c2bf1a3572d054252f8f649f22931c74a28672cf3"
+    "bytes": 14339,
+    "sha256": "786c0d0cac0d9ed68a79d85d999aee298ba95a1bebc6cb63aee2de8c06e0e411"
+  },
+  {
+    "path": "web/src/CRMConnections.tsx",
+    "bytes": 9558,
+    "sha256": "e344a2c9f574d0525bfa82e8450e352c54f4ea018fa73e4f1a636dd1920213d1"
   },
   {
     "path": "web/src/Inbox.tsx",
-    "bytes": 14503,
-    "sha256": "af94a8360915c57bea86c1b12abdb33a93aa23c5283ab722c11e4a63250b4630"
+    "bytes": 14851,
+    "sha256": "16262df357cf87068d47181edada9e11a7ca03355a4632ccae7eeec069bbd247"
   },
   {
     "path": "web/src/Knowledge.tsx",
@@ -510,19 +605,29 @@
     "sha256": "26e8a84a51a5d3c90d1ad35165265d93acd458309162bb32be0a3e478fc2721f"
   },
   {
+    "path": "web/src/Research.tsx",
+    "bytes": 13358,
+    "sha256": "e63bd3fc6308d5e6b54e76bd7c537392a9a21b873a7c97afae1c236798bc86f3"
+  },
+  {
     "path": "web/src/ReviewPolicy.tsx",
     "bytes": 4063,
     "sha256": "5af1917ed3bd86ee4965afadbd401663ed77a8b4210bc7d500f864a41c6b6477"
   },
   {
     "path": "web/src/Settings.tsx",
-    "bytes": 22538,
-    "sha256": "30635c01890e19d99cf830f187eaa1fd4c2bde2240709d167717456960b00b5c"
+    "bytes": 22213,
+    "sha256": "49b4f6f8d5f2234563ffbcfede00f21a00e88fbbe7b02297f680aa32a0822392"
   },
   {
     "path": "web/src/SocialConnections.tsx",
     "bytes": 4988,
     "sha256": "8c8d18d0e146b036fb2cbb844fd2ad5674f622f80dff7811e6a7d170bd0650b0"
+  },
+  {
+    "path": "web/src/Strategy.tsx",
+    "bytes": 4432,
+    "sha256": "799c14f22bf4ae3e17d26d4cc2006d2f9ce7ac57bcccc01859ef4cc917c3c07b"
   },
   {
     "path": "web/src/style.css",
@@ -533,6 +638,11 @@
     "path": "web/src/TelegramLink.tsx",
     "bytes": 2957,
     "sha256": "0be80bdd6b284336a3cd026821edb3fa014a6933774b7b9f01e35ccaea637783"
+  },
+  {
+    "path": "web/src/TelegramObservation.tsx",
+    "bytes": 4697,
+    "sha256": "d69d23e4dd3804340e7f026bbef0e16107e90b85c31e982158113d029245f4f8"
   },
   {
     "path": "web/src/ui.tsx",
