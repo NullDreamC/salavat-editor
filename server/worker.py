@@ -12,6 +12,7 @@ import time
 from zoneinfo import ZoneInfo
 import httpx
 
+from . import post_edits
 from .integrations import telegram_call, publish_telegram, message_is_addressed, IntegrationError, TelegramError
 from .webapp import configure_bot, menu_markup, public_url
 from .network import http_options
@@ -74,6 +75,7 @@ class Worker:
             photo_columns = {row['name'] for row in conn.execute('PRAGMA table_info(bot_photo_replies)')}
             if 'instruction' not in photo_columns:
                 conn.execute("ALTER TABLE bot_photo_replies ADD COLUMN instruction TEXT NOT NULL DEFAULT ''")
+            post_edits.initialize(conn)
             # An interrupted operation may have reached Telegram. Human inspection required.
             conn.execute("UPDATE bot_inbox SET status='interrupted' WHERE status='processing'")
             conn.execute(
@@ -306,6 +308,8 @@ class Worker:
                 return
             if not message_is_addressed(message, company['bot_username'], company['bot_id']):
                 return
+        if await post_edits.handle_reply(self, company, token, [message], user, telegram_call):
+            return
         chat_id = chat['id']
         text_only = message.get('text') and not self.attachment(message)
         if text_only and command in TASK_COMMANDS:
@@ -656,13 +660,16 @@ class Worker:
         if private and chat.get('id') != sender:
             return
         user = self.service.telegram_members(company['id'], sender)
-        if not user or user['role'] not in ('admin', 'editor'):
+        if not user:
             return
         if not private and (str(chat.get('id')) != str(company.get('chat_id')) or not any(
             message_is_addressed(item, company['bot_username'], company['bot_id']) for item in messages
         )):
             return
-        await self.handle_material(company, token, user, messages)
+        if await post_edits.handle_reply(self, company, token, messages, user, telegram_call):
+            return
+        if user['role'] in ('admin', 'editor'):
+            await self.handle_material(company, token, user, messages)
 
     async def handle_material(self, company, token, user, messages):
         attachments = sum(bool(self.attachment(item)) for item in messages)
@@ -911,11 +918,18 @@ class Worker:
             media = self.service.publication_media(cid, post)
             if media:
                 await publish_telegram(token, str(chat_id), post['body'], media)
-            preview = f'Пост №{post["id"]}' if media else f'Пост №{post["id"]}\n\n{post["body"]}'
+            preview = f'Пост №{post["id"]}'
+            if not media:
+                body = post['body']
+                if len(preview) + 2 + len(body) > 4096:
+                    await self.send(token, chat_id, body[:4096])
+                else:
+                    preview += f'\n\n{body}'
             if post.get('logo_pending'):
                 if user:
                     options = logo_options(self.service, cid, post['id'], post['version'], actor=user)
                     markup = logo_keyboard(post, options['variants'])
+                    markup['inline_keyboard'].append([{'text': 'Изменить', 'callback_data': f'edit:{post["id"]}:{post["version"]}'}])
                     preview += '\nВыберите цвет и угол логотипа, затем нажмите «Применить».'
                 else:
                     markup = {'inline_keyboard': self.post_controls(cid, post, user)}
@@ -945,6 +959,10 @@ class Worker:
                 await telegram_call(token, 'answerCallbackQuery', {'callback_query_id': cb['id']})
                 return
             parts = cb.get('data', '').split(':')
+            if parts[0] == 'pedit' and len(parts) == 2:
+                await post_edits.menu_callback(self, company, token, cb, user, parts[1], telegram_call)
+                await telegram_call(token, 'answerCallbackQuery', {'callback_query_id': cb['id']})
+                return
             if parts[0] in ('logo', 'logopick', 'logoapply'):
                 if not user:
                     raise ValueError('Нет доступа.')
@@ -965,22 +983,14 @@ class Worker:
             elif action == 'publish':
                 await self.service.publish(cid, pid, version, actor=user)
             elif action == 'edit':
-                with self.db.read() as conn:
-                    self.service.require_actor(conn, cid, user, {'admin', 'editor', 'approver'})
-                    post = self.service._post_row(conn, cid, pid)
-                    self.service._editable(post, version)
-                    if user['role'] == 'approver' and post['status'] not in ('review', 'approved'):
-                        raise DomainError('Правки доступны согласующему на проверке.', 403)
-                hint = 'Напишите, что нужно исправить. Передам правки редактору.' if user['role'] == 'approver' else 'Напишите, что изменить в тексте поста.'
-                if group_origin:
-                    hint += f' Добавьте упоминание @{company["bot_username"]}.'
-                sent = await self.send(token, origin['id'], f'Пост №{pid}\n{hint}', reply_markup={'force_reply': True, 'selective': True})
-                with self.db.transaction() as conn:
-                    conn.execute('INSERT OR REPLACE INTO bot_edit_replies VALUES(?,?,?,?,?,?)',
-                                 (cid, str(origin['id']), sent['message_id'], pid, version, str(cb['from']['id'])))
+                await post_edits.open_menu(self, company, token, origin['id'], cb['from']['id'], pid, version, user)
+                await telegram_call(token, 'answerCallbackQuery', {'callback_query_id': cb['id']})
+                return
             else:
                 raise ValueError('Неизвестное действие.')
             answer = 'Сохранено.'
+        except DomainError as error:
+            answer = error.detail
         except Exception:
             answer = 'Действие не выполнено. Проверьте права, канал и текущую версию в кабинете.'
         await telegram_call(token, 'answerCallbackQuery', {'callback_query_id': cb['id'], 'text': answer, 'show_alert': True})

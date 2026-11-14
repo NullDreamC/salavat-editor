@@ -89,9 +89,14 @@ def test_three_review_actions_and_logo_button_edit_reply_respects_role_and_versi
                                         'input_tokens': 10, 'output_tokens': 5})
     monkeypatch.setattr(photo_workflow.integrations, 'generate_post', regenerate)
     company = {'id': 2, 'bot_username': 'example_bot', 'bot_id': 12}
+    calls.side_effect = [{'message_id': 50}, True, True, True, True, {'message_id': 51}, True,
+                         *([{'message_id': 52}] * 10)]
     asyncio.run(bot.callback(company, 'fixture-token', callback(f"edit:{post['id']}:{review['version']}")))
+    asyncio.run(bot.callback(company, 'fixture-token', callback('pedit:text')))
+    action = 'revise' if role == 'admin' else 'feedback_text'
+    asyncio.run(bot.callback(company, 'fixture-token', callback(f'pedit:{action}')))
     update = {'message': {'message_id': 55, 'from': {'id': 101}, 'chat': {'id': 101, 'type': 'private'},
-                          'text': 'Сделать текст короче.', 'reply_to_message': {'message_id': 50}}}
+                          'text': 'Сделать текст короче.', 'reply_to_message': {'message_id': 51}}}
     asyncio.run(bot.handle(company, 'fixture-token', update))
     result = service.post(2, post['id'])
     assert result['photo_url'] == review['photo_url'] and result['logo'] == review['logo']

@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 import re
 import secrets
 from typing import Annotated, Literal
@@ -7,7 +8,7 @@ from fastapi import Depends
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from . import integrations
-from .brand_images import BrandImageError, prepare_brand
+from .brand_images import BrandImageError, load_brand_config, prepare_brand
 from .domain import EDITOR_ROLES, DomainError, audit_row, pack, upload_content
 
 
@@ -58,7 +59,40 @@ def _photo_state(service, connection, company_id, post_id, version, actor):
     return company, row
 
 
-async def apply_photo(service, company_id, post_id, version, mode, instruction="", source_id=None, *, actor, check=None):
+def current_photo(service, connection, company_id, row):
+    """Use the clean version of a branded photo, or the only visible original."""
+    photo_id = row['photo_base_id'] or row['photo_id']
+    if photo_id:
+        photos = [service._source_row(connection, company_id, photo_id)]
+    else:
+        photos = [photo for photo in service._media(connection, company_id, row) if photo['kind'] == 'image']
+    if len(photos) != 1 or photos[0]['mime_type'] not in PHOTO_MIMES:
+        raise DomainError('Для правок нужно одно фото JPEG, PNG или WebP. Загрузите нужное фото или создайте новое.', 422)
+    return photos[0]
+
+
+def replace_photo(service, company_id, post_id, version, source_id, *, actor):
+    """Attach the uploaded original; the existing logo picker uses the same clean file."""
+    with service.db.transaction() as connection:
+        company, row = _photo_state(service, connection, company_id, post_id, version, actor)
+        source = service._source_row(connection, company_id, source_id)
+        if source['kind'] != 'image' or source['mime_type'] not in PHOTO_MIMES:
+            raise DomainError('Пришлите фото в формате JPEG, PNG или WebP.', 422)
+        brand = {**dict(company), 'brand_root': service.db.path.parent / 'brands'}
+        base_id = None
+        try:
+            config = load_brand_config(brand['brand_root'], company_id)
+            if row['photo_base_id'] or any(path and Path(path).is_file() for variant in ('light', 'dark', 'primary')
+                                           if (path := config.get(f'{variant}_logo_path'))):
+                prepare_brand({**brand, 'brand': config})
+                base_id = source_id
+        except BrandImageError as error:
+            raise DomainError(str(error), 422) from None
+        return _reset(service, connection, company_id, row, actor, source_id, 'post.photo_uploaded', photo_base_id=base_id)
+
+
+async def apply_photo(service, company_id, post_id, version, mode, instruction="", source_id=None, *, actor, check=None,
+                      edit_current=False):
     instruction = instruction.strip()
     if mode != "original" and not instruction:
         raise DomainError("Какое изображение нужно создать или что нужно изменить? Добавьте задание для изображения.", 422)
@@ -66,8 +100,13 @@ async def apply_photo(service, company_id, post_id, version, mode, instruction="
         if check is not None:
             check(connection)
         company_row, row = _photo_state(service, connection, company_id, post_id, version, actor)
-        ids = json.loads(row["source_ids"])
-        photos = [source for sid in ids if (source := service._source_row(connection, company_id, sid))["kind"] == "image"]
+        if edit_current:
+            if mode != 'edit' or source_id is not None:
+                raise ValueError('Current photo is only available in edit mode.')
+            photos = [current_photo(service, connection, company_id, row)]
+        else:
+            ids = json.loads(row["source_ids"])
+            photos = [source for sid in ids if (source := service._source_row(connection, company_id, sid))["kind"] == "image"]
         if mode == "original":
             if not photos:
                 raise DomainError("Добавьте исходную фотографию к посту.", 422)

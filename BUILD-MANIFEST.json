@@ -6,8 +6,8 @@
   },
   {
     "path": "CONTRACT.md",
-    "bytes": 21577,
-    "sha256": "c332f56e4e3fae29559b811b802c02bf2ea73726639840a3f5c11e88c1123c02"
+    "bytes": 22157,
+    "sha256": "a62c678e9555137532fe90c2089e09c9b233db6262afd795c38e2d70aada52ad"
   },
   {
     "path": "docs/API_соцсетей.md",
@@ -126,8 +126,13 @@
   },
   {
     "path": "server/photo_workflow.py",
-    "bytes": 8871,
-    "sha256": "65fee5017c576bbaaae1e47e98970238c4920465f73fc16022fbfd30e27d392e"
+    "bytes": 11186,
+    "sha256": "baf72a0b72ddc2238be4b52a599290eb38374accc17dbdce997dc103b98e5588"
+  },
+  {
+    "path": "server/post_edits.py",
+    "bytes": 12316,
+    "sha256": "398d0892bd853d8fa2fd4f0e4ad8503040c9554ed1925ca9a3acf391de8aebf7"
   },
   {
     "path": "server/reports.py",
@@ -181,8 +186,8 @@
   },
   {
     "path": "server/worker.py",
-    "bytes": 73159,
-    "sha256": "e174556ad13e61983b1c64750091ecfa4b65d95cc53326dafad7b1624a8ebf09"
+    "bytes": 73116,
+    "sha256": "a8dc6ae711ec862937af538b43ea62212ea96e2530a36a2b5b396c065a1e7ae0"
   },
   {
     "path": "start.cmd",
@@ -271,8 +276,8 @@
   },
   {
     "path": "tests/test_logo_worker.py",
-    "bytes": 6480,
-    "sha256": "38fcc57da555df8cc210bb9749e5adf49a093ce322d915c9b1536250971068a7"
+    "bytes": 6857,
+    "sha256": "4f9bf3fbe914745d7009c39a655f0b06e6ba81d6a4c162fa11f010925d6f074b"
   },
   {
     "path": "tests/test_models.py",
@@ -293,6 +298,11 @@
     "path": "tests/test_photo_workflow.py",
     "bytes": 12109,
     "sha256": "2fcbfc1a65dfd402e42dbe5ab8750d8a6900bb1a7cb6906b52adbffd1affdd61"
+  },
+  {
+    "path": "tests/test_post_edit_menu.py",
+    "bytes": 11154,
+    "sha256": "0eb396e4c8813f28d50f6f5bb179073f2e4d13a4e1283a24d4c858a8a3233e25"
   },
   {
     "path": "tests/test_preview_without_channel.py",
@@ -546,8 +556,8 @@
   },
   {
     "path": "Как_работать_с_ботом.md",
-    "bytes": 13167,
-    "sha256": "c872eeb213d56b8a085fa49ba447eab15582fd54ac14801d8c12c764fcec3a7c"
+    "bytes": 14903,
+    "sha256": "d3452e4e9390e8a72389d2e3912a9c96328cd9ce0920224601df8afc90342cd5"
   },
   {
     "path": "Основные и дополнительные визуальные элементы бренда/ЛОГОТИП/БЕЛЫЙ/RUS/.PNG/ЛОГОТИП.png",

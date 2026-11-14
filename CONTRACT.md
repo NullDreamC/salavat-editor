@@ -27,6 +27,8 @@ Explicit post-creation requests within assistant conversations create a real pub
 
 Membership `can_approve` defaults to false and grants editors post approval, rejection, publication, and publication reconciliation in that company only. Company admins may set it through employee create/patch; role changes clear it unless a company admin explicitly grants it with the new editor role. It does not grant company administration or inbox approval. Post actions recheck active membership and this capability in the transaction; Telegram buttons and reviewer notifications use the same eligibility. Explicit reviewer assignments still constrain approval/rejection/reconciliation. Global technical access records retain only ID, company, role, and status.
 
+Telegram post editing separates text and image actions. Editors/admins choose text revision or direct replacement, current-image editing, new generation, or a photo upload. Text changes preserve media; image changes preserve text. Image editing uses the saved unbranded base when available. Reply prompts bind the company, bot, chat, sender, post and version; processing claims prevent duplicate paid work. Group mention rules and role checks remain enforced, and every mutation invalidates approval. Approver-only users retain feedback/rejection rather than authoring access.
+
 `server.tunnel_runner` supervises the previously approved localhost.run configuration, reconnects after an activity timeout and updates the exact WebApp origin. A per-directory process lock prevents duplicate supervisors; `.runtime/tunnel.stop` stops it. Windows DPAPI credentials remain tied to the original account/computer; cloud migration requires new secret provisioning.
 
 ## HTTP interface
