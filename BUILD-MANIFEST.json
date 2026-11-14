@@ -1,0 +1,572 @@
+[
+  {
+    "path": ".gitignore",
+    "bytes": 236,
+    "sha256": "f4bc5bd7b7b4370b241f8c069979c339d63eb2d6821091305f3a81e456f3298d"
+  },
+  {
+    "path": "CONTRACT.md",
+    "bytes": 20906,
+    "sha256": "512fdfd17907459342a5c821925b05f8e2bb190b5c9029f291433464c7048d9c"
+  },
+  {
+    "path": "docs/API_соцсетей.md",
+    "bytes": 6228,
+    "sha256": "ff46e5e49ef5f15d05f7cc50de39365edf365a7de1f0141cab71226612d64536"
+  },
+  {
+    "path": "docs/Поручения_и_отчёты.md",
+    "bytes": 4746,
+    "sha256": "d0ef628313272ddfeacf51d32ec509d4a44d7cf4ef2fe9b280fb2fc7bee08007"
+  },
+  {
+    "path": "docs/Сборка.md",
+    "bytes": 1840,
+    "sha256": "443779264c43e41be21d3124dae6728055ccd240a9716bfcface8370b2dba8d8"
+  },
+  {
+    "path": "docs/Статус_ТЗ.md",
+    "bytes": 9365,
+    "sha256": "face6c7d59000b8b09e02ac6bcd7a588c8ee4701488cb8f757d38ba3188aa0a5"
+  },
+  {
+    "path": "README.md",
+    "bytes": 32111,
+    "sha256": "a5faeeff878cb71bdbe11fe769429b35475e58a55c811bbb2e6a7313a14532bb"
+  },
+  {
+    "path": "requirements-dev.txt",
+    "bytes": 44,
+    "sha256": "da4f200fa35c963f8086a124facca8d4ef9024e522fbb6aa9b04c13d9d0f6bf0"
+  },
+  {
+    "path": "requirements.lock.txt",
+    "bytes": 534,
+    "sha256": "91505c93b9693c8dc2abc44784ed3360a98ec28baf5ce70a17a8bfbf8ae2d8ef"
+  },
+  {
+    "path": "requirements.txt",
+    "bytes": 154,
+    "sha256": "10593bc3ee74424b7961a898944e573c821fc643df18d2364ba4dfcd324a30a7"
+  },
+  {
+    "path": "scripts/package_release.py",
+    "bytes": 3874,
+    "sha256": "3e394c0595ee67e2eefeabc19f9a39e8aef1f3d03a87c6cfad48dd2a37488a68"
+  },
+  {
+    "path": "server/analytics.py",
+    "bytes": 15700,
+    "sha256": "5c30fb010bc934d39e75ffb876ddee85e68dc4ca72cee2894deea46cb7ae3e52"
+  },
+  {
+    "path": "server/assistant_tasks.py",
+    "bytes": 50924,
+    "sha256": "2b788eea07a8aad88dcd2a1cdce41093cc245807112aa2f442ead985bec0a7e6"
+  },
+  {
+    "path": "server/bot_progress.py",
+    "bytes": 2111,
+    "sha256": "5ad859f7a978be18cd36f6d12a18f23d46bbe1f208a42f584591487e4de7761a"
+  },
+  {
+    "path": "server/brand_images.py",
+    "bytes": 12313,
+    "sha256": "8a922d65d4d33adbdb311ad28c5ac75fbc6b131704a1e3f700f519a517420394"
+  },
+  {
+    "path": "server/cards.py",
+    "bytes": 4177,
+    "sha256": "c043c891913ee7cf81ddc12c23738f730637b87d2c059e537ff11b3271894369"
+  },
+  {
+    "path": "server/company_seed.py",
+    "bytes": 8278,
+    "sha256": "6a1814cd16230d402e3c984bb363cda21ea5511c76f5a9d974732e04c3095645"
+  },
+  {
+    "path": "server/db.py",
+    "bytes": 10810,
+    "sha256": "4e8f97c0aaed525cf10fae79b1fab89c077908f0a1db9b1e40f5cda7cacea4e8"
+  },
+  {
+    "path": "server/domain.py",
+    "bytes": 65190,
+    "sha256": "fc08646dd56aaa71294994fc4e4d6930759c553a16a5d6a002f0561d528ab67b"
+  },
+  {
+    "path": "server/inbox.py",
+    "bytes": 36865,
+    "sha256": "99ec825e9fd9120b3672e8305048bbea1a844f699d137a99727aba61211408ac"
+  },
+  {
+    "path": "server/integrations.py",
+    "bytes": 48265,
+    "sha256": "ff9c5fdf63e4fa464cff09918a960e9e1f2aad4846ede56cbe728cc1abdc1b1c"
+  },
+  {
+    "path": "server/knowledge.py",
+    "bytes": 14837,
+    "sha256": "f25e9c0b5a9ad0ca1bbd292fea9aeb714e021aa717e51c1c229a8d881a09c426"
+  },
+  {
+    "path": "server/logo_workflow.py",
+    "bytes": 7484,
+    "sha256": "ff23c0c973ef5bfc88322676331b4cff932880f8095d7739cd855465ea2db90d"
+  },
+  {
+    "path": "server/main.py",
+    "bytes": 43336,
+    "sha256": "c77dd42ccff028fa43e943f29a2b20e9efc6dd6f0773aa3c0301e931b0ef24fb"
+  },
+  {
+    "path": "server/network.py",
+    "bytes": 498,
+    "sha256": "fb3ab3fc50a10e102b7267a0a100db0662c658088fffc68c1562e61bf631fd7a"
+  },
+  {
+    "path": "server/photo_workflow.py",
+    "bytes": 8871,
+    "sha256": "65fee5017c576bbaaae1e47e98970238c4920465f73fc16022fbfd30e27d392e"
+  },
+  {
+    "path": "server/reports.py",
+    "bytes": 32630,
+    "sha256": "9dd8d5324e5991f673ceb078717e29b718010a271d980f81d75803b7d379602a"
+  },
+  {
+    "path": "server/review_policy.py",
+    "bytes": 7406,
+    "sha256": "a0866a1f4fa6f7b1575caa54704c42010d1ee1aaa888d422facd0a26f3e06375"
+  },
+  {
+    "path": "server/setup_telegram.py",
+    "bytes": 2987,
+    "sha256": "cc9e5e54d1518b3bacb8bf4427dc0581b297eac93c6b673bc2d6df81660e13e0"
+  },
+  {
+    "path": "server/social_platforms.py",
+    "bytes": 30878,
+    "sha256": "bd1b2a155e80094b05c630b1cd943bcdc6765e9cc82d7bf9130000909ba2d845"
+  },
+  {
+    "path": "server/task_posts.py",
+    "bytes": 19053,
+    "sha256": "1a8e492864ad8db328cb561450d9b0c14980bf03ee16a93e77b4c5380c12ba89"
+  },
+  {
+    "path": "server/telegram_intents.py",
+    "bytes": 27054,
+    "sha256": "97a18c52a9ac04069f33edff0d7193c8749998edb8d3ce900837bc67fb2c19d2"
+  },
+  {
+    "path": "server/telegram_link.py",
+    "bytes": 6180,
+    "sha256": "15c842a12ab296884390167112a47b6aeb65bca12877233d451bd6ac4d67e7ba"
+  },
+  {
+    "path": "server/tunnel_runner.py",
+    "bytes": 1936,
+    "sha256": "10e02d3aa3b31fab423f15a222e72516e098ff36825b9ce022be03c6b78d8c80"
+  },
+  {
+    "path": "server/tunnel_watch.py",
+    "bytes": 968,
+    "sha256": "f02521ff44f8dac46695e6d2d2a9df192c5a01d495eae2fb87493d94b5660f53"
+  },
+  {
+    "path": "server/webapp.py",
+    "bytes": 3027,
+    "sha256": "c3efbc5c5c74670e6cb6ab837b67281b58e977b38ae03a87158a804ee8b5e8b9"
+  },
+  {
+    "path": "server/worker.py",
+    "bytes": 73027,
+    "sha256": "707dbcd52ef6bb26b1483fe1ef80fbe1596ae7517d0157b70f9aa78e98eea1ee"
+  },
+  {
+    "path": "start.cmd",
+    "bytes": 106,
+    "sha256": "2df401478f3f964c5377236b123f61c7ab4ef9eef89d581160b99f9a4ff71ddc"
+  },
+  {
+    "path": "start.ps1",
+    "bytes": 1186,
+    "sha256": "5966883f78dc8c4900488b40ba6c297c5a7c1fb2127a4b8ca08f017c6fc0b2b3"
+  },
+  {
+    "path": "tests/browser_controls.py",
+    "bytes": 15059,
+    "sha256": "9d3a543c4df3490a8869a3d6b6a8a3f73109167bdd5802c9990f303e6b20777f"
+  },
+  {
+    "path": "tests/browser_smoke.py",
+    "bytes": 18603,
+    "sha256": "199c312c8d02f14fc06d4495f6775beb4529964d1265c67d3821e2d8abcaf82f"
+  },
+  {
+    "path": "tests/test_analytics.py",
+    "bytes": 3515,
+    "sha256": "551821a04ea096a242552b9057b319ddc59e9f4a1fc36a3a09173b323193dd23"
+  },
+  {
+    "path": "tests/test_assistant_tasks.py",
+    "bytes": 15345,
+    "sha256": "945ac74d51769dce598d6b153a04e54aae0dc55c48fafd4755bbfb77f1f4f03d"
+  },
+  {
+    "path": "tests/test_backend.py",
+    "bytes": 15600,
+    "sha256": "258a19b553a05ba1701119fd3bec0e756c4cc77f032ba8c07623cbeac39a95ea"
+  },
+  {
+    "path": "tests/test_bot_progress.py",
+    "bytes": 3436,
+    "sha256": "9bf8ed0962172770c95db32bac0dbca3db6adc376e2e204581dbc00570a13859"
+  },
+  {
+    "path": "tests/test_brand_images.py",
+    "bytes": 10454,
+    "sha256": "11023d39d0b97b45c7896124e8d314e890027a7457377b13e309bfc858243e48"
+  },
+  {
+    "path": "tests/test_cards.py",
+    "bytes": 1999,
+    "sha256": "5c1034ea154e0d1114d17c399c22dc7aa01dce77986c3d3853f9fa6907679080"
+  },
+  {
+    "path": "tests/test_company_controls.py",
+    "bytes": 9037,
+    "sha256": "5dea6062e2ac36ada7e7e09856475bf725cbc737cbd9e1648aa4234609f45475"
+  },
+  {
+    "path": "tests/test_generation_claim.py",
+    "bytes": 7432,
+    "sha256": "6940a54a77c6c5a32d508d9301ea7711779724ce2bd1f6d61a1bd24225779fc3"
+  },
+  {
+    "path": "tests/test_inbox.py",
+    "bytes": 14725,
+    "sha256": "f46c8c0cd3f84f018501b7316cdd12598924b44d55ffe308e6c8a660c46d882c"
+  },
+  {
+    "path": "tests/test_integrations.py",
+    "bytes": 11149,
+    "sha256": "9ac70f09d4d599b33ae8626b96de0b1f20f7eba42dc67895beecae04fbaa4fcd"
+  },
+  {
+    "path": "tests/test_knowledge.py",
+    "bytes": 14099,
+    "sha256": "dc89155c0188b29347c10f7000cf19f5680df30b8287a3b8e63c7172137fc956"
+  },
+  {
+    "path": "tests/test_logo_worker.py",
+    "bytes": 6480,
+    "sha256": "38fcc57da555df8cc210bb9749e5adf49a093ce322d915c9b1536250971068a7"
+  },
+  {
+    "path": "tests/test_models.py",
+    "bytes": 5499,
+    "sha256": "40c793f0f45d92660926ad84d813e5f412fae41b90b107a759401722a2d48b2d"
+  },
+  {
+    "path": "tests/test_multichannel_posts.py",
+    "bytes": 3488,
+    "sha256": "3d714eac7b59b9115fdf9327846197c1b521d29ec63e4bcb3dcdc58241791fb4"
+  },
+  {
+    "path": "tests/test_passwords.py",
+    "bytes": 5846,
+    "sha256": "1f20c5e4b5e74ac1200571ffbb1495bbb032df62f47db1284773319eaf5fad3c"
+  },
+  {
+    "path": "tests/test_photo_workflow.py",
+    "bytes": 12109,
+    "sha256": "2fcbfc1a65dfd402e42dbe5ab8750d8a6900bb1a7cb6906b52adbffd1affdd61"
+  },
+  {
+    "path": "tests/test_preview_without_channel.py",
+    "bytes": 2569,
+    "sha256": "8dbe3eee32a9da3f992e06489b42fd8468ff71c9f9db6449b700df42dcc40fd5"
+  },
+  {
+    "path": "tests/test_reports.py",
+    "bytes": 9363,
+    "sha256": "66dce3fcfe1d42956ee1f141e2c42a758d7e31266349f41332dca40f6d2b141d"
+  },
+  {
+    "path": "tests/test_review.py",
+    "bytes": 6357,
+    "sha256": "c1ae284b9434f995dc6888e12df5bf96587ff4bdcc84d2fad118b7e79d0318d1"
+  },
+  {
+    "path": "tests/test_review_policy.py",
+    "bytes": 7131,
+    "sha256": "cbd90af30f0f2cd77ae1fbe065e966fef8b6cfb6824969a39cff18cd0e9e7a76"
+  },
+  {
+    "path": "tests/test_roles.py",
+    "bytes": 9540,
+    "sha256": "c1cc67c8890f85c8b0c88d3ce796f5f081f2b996b589caf15d50eea03d4c271a"
+  },
+  {
+    "path": "tests/test_social_platforms.py",
+    "bytes": 17428,
+    "sha256": "457c7b6ce924cb9a0aae2cccbe0c8bfbf49a308698aa4b315e1b24debcc27301"
+  },
+  {
+    "path": "tests/test_task_post_delivery.py",
+    "bytes": 9189,
+    "sha256": "3b3b0a87421745b47f510459a8df6e2d54fa1d426acecfa3bdab05c701b2ec8f"
+  },
+  {
+    "path": "tests/test_task_posts.py",
+    "bytes": 9775,
+    "sha256": "fc9f27d8b30167a3bd9dd11b1b08972123952323d4d1f55feb1419f50799aa1b"
+  },
+  {
+    "path": "tests/test_telegram_download.py",
+    "bytes": 4713,
+    "sha256": "8b23f7584ef4a5ce1616b1c505918e869d310da1f62b43719ababad2b6207e9d"
+  },
+  {
+    "path": "tests/test_telegram_intents.py",
+    "bytes": 12854,
+    "sha256": "3a6d6ff3141f6839a56f781f268dc56be86cb8df3e49c7f5ddadcce9915a9603"
+  },
+  {
+    "path": "tests/test_telegram_link.py",
+    "bytes": 3741,
+    "sha256": "986242b7405812fa9d714fa5658ae2fb12434fb3544633070649cc6c3202874e"
+  },
+  {
+    "path": "tests/test_webapp.py",
+    "bytes": 5620,
+    "sha256": "853590e9d044ab83cfabc7e0b2f9b102be4fbebccd39e53cf892fb86a826f03f"
+  },
+  {
+    "path": "tests/test_worker.py",
+    "bytes": 15075,
+    "sha256": "da8fa60b434155954088bb69195a9f6b662fce6fcc04a86f2f29798187ec9a5c"
+  },
+  {
+    "path": "tests/test_worker_tasks.py",
+    "bytes": 15941,
+    "sha256": "7ef36c5f4413d6da9dac835f138bccbdab2cfbe1ee6ccbc744e1d2f74bd33d58"
+  },
+  {
+    "path": "web/.gitignore",
+    "bytes": 20,
+    "sha256": "790e3169bc19b046fe55ba1da6d13b976c28363c8c00462a2195fe5faf260910"
+  },
+  {
+    "path": "web/dist/assets/index-C3nlYWfQ.js",
+    "bytes": 344900,
+    "sha256": "6696994619c591a75846545c5540fee56f2c7ad27f05de70e3c3411e80e77ee3"
+  },
+  {
+    "path": "web/dist/assets/index-CZSGVKST.css",
+    "bytes": 18299,
+    "sha256": "83369e196d1432a05215660a0b7f2d11cb270756f9aafb5ba626518b3a354fcb"
+  },
+  {
+    "path": "web/dist/fonts/avenirnextcyr-demi.ttf",
+    "bytes": 88732,
+    "sha256": "2dda88f9fe9b926149c3c953e87f27676d2e33873df69d2654a80a9f630a2e69"
+  },
+  {
+    "path": "web/dist/fonts/avenirnextcyr-regular.ttf",
+    "bytes": 89020,
+    "sha256": "6f6e65cf063a3c39bd7cb6261299b5160230072fdbb064bd531a9c7767229d53"
+  },
+  {
+    "path": "web/dist/index.html",
+    "bytes": 481,
+    "sha256": "7425fff989fc2bad6a14d479d3302a739b77d4d42ce4313655d0c11360161faa"
+  },
+  {
+    "path": "web/index.html",
+    "bytes": 383,
+    "sha256": "eef4b6337e225c1e8bfd128a3301871427a58b0d9614f1efef0caabbac53cb1c"
+  },
+  {
+    "path": "web/package-lock.json",
+    "bytes": 38016,
+    "sha256": "be985f7d59f4c8466a7adf2d395e3f0d16d43b54194d8bf08528f512906cd889"
+  },
+  {
+    "path": "web/package.json",
+    "bytes": 553,
+    "sha256": "343d86b7c8d836a8174a95a5de1c9fb8eb9858ef3760c4834ee6c04e3bda2688"
+  },
+  {
+    "path": "web/public/fonts/avenirnextcyr-demi.ttf",
+    "bytes": 88732,
+    "sha256": "2dda88f9fe9b926149c3c953e87f27676d2e33873df69d2654a80a9f630a2e69"
+  },
+  {
+    "path": "web/public/fonts/avenirnextcyr-regular.ttf",
+    "bytes": 89020,
+    "sha256": "6f6e65cf063a3c39bd7cb6261299b5160230072fdbb064bd531a9c7767229d53"
+  },
+  {
+    "path": "web/src/Access.tsx",
+    "bytes": 7026,
+    "sha256": "64fbec1150542cbfa8b72ff063bac6e119522b4ae2803b65a1992207baa4898e"
+  },
+  {
+    "path": "web/src/Analytics.tsx",
+    "bytes": 10340,
+    "sha256": "1c7f17706cd66e6ed21082f6d74e8e5c33934b023bf595b8320314e9eb2707df"
+  },
+  {
+    "path": "web/src/api.ts",
+    "bytes": 5483,
+    "sha256": "9c53dda129ac52f676f4c05a4c319fe1fd4e69be04793441d074e8e798eb6355"
+  },
+  {
+    "path": "web/src/App.tsx",
+    "bytes": 13093,
+    "sha256": "6e168d8e8cd41ce30f99b05e20710c5788c8a7fc222e66bfb07d21b209ed7a1d"
+  },
+  {
+    "path": "web/src/AssistantTasks.tsx",
+    "bytes": 11708,
+    "sha256": "3c1f5a433cf6a5851410353be9ea80d9f4fb77c70340fa946e7406e50ed444b9"
+  },
+  {
+    "path": "web/src/BrandSettings.tsx",
+    "bytes": 4208,
+    "sha256": "2ce659e4b450b3e0f986dd66a5f6e0ccb36a4c2c1b84b713c9d74f427b81af23"
+  },
+  {
+    "path": "web/src/Calendar.tsx",
+    "bytes": 7536,
+    "sha256": "3b8c6149db6624eb4c5bf7ce15683daa9ca0478353f5c2d4950e598530fa8c7d"
+  },
+  {
+    "path": "web/src/ContentPlan.tsx",
+    "bytes": 14005,
+    "sha256": "7dce73fc4e46649c4bcdd54c2bf1a3572d054252f8f649f22931c74a28672cf3"
+  },
+  {
+    "path": "web/src/Inbox.tsx",
+    "bytes": 14503,
+    "sha256": "af94a8360915c57bea86c1b12abdb33a93aa23c5283ab722c11e4a63250b4630"
+  },
+  {
+    "path": "web/src/Knowledge.tsx",
+    "bytes": 9316,
+    "sha256": "728fedb60b95e1420298e84085677958e68486a26acc9e4b67fcb7e0b96811bd"
+  },
+  {
+    "path": "web/src/LogoControls.tsx",
+    "bytes": 2431,
+    "sha256": "7e7e8dfc14a86545e93889abe5b86c6d784b693a2c8ea5cfce6bfacce91eca2e"
+  },
+  {
+    "path": "web/src/main.tsx",
+    "bytes": 657,
+    "sha256": "350ed5bf7e5862614b276eb04d2b801cd9384706078725adb19a1b26f7b32957"
+  },
+  {
+    "path": "web/src/Materials.tsx",
+    "bytes": 5482,
+    "sha256": "d4377981771a27d05316343c11173747305b55f8ed4f81e458770e7a086399d0"
+  },
+  {
+    "path": "web/src/PasswordDialog.tsx",
+    "bytes": 2466,
+    "sha256": "fcdcc4e0f21b340ad555aba1e45f6ad381dabc89e1e685195433597c3401823b"
+  },
+  {
+    "path": "web/src/Posts.tsx",
+    "bytes": 30110,
+    "sha256": "9e85e2fa5346240c082022f94c8b5b87232b1c6b3f57d4da544fa6ce6abf927d"
+  },
+  {
+    "path": "web/src/Reports.tsx",
+    "bytes": 12819,
+    "sha256": "26e8a84a51a5d3c90d1ad35165265d93acd458309162bb32be0a3e478fc2721f"
+  },
+  {
+    "path": "web/src/ReviewPolicy.tsx",
+    "bytes": 3984,
+    "sha256": "470faa7dae39f9ef13aad60433843cc3d27a5b645a6e7407bb41866435b61454"
+  },
+  {
+    "path": "web/src/Settings.tsx",
+    "bytes": 21954,
+    "sha256": "03b49d667ddf03d438309bad5541bc6ad4db2a190a5c6a5438b1632c4afe98f9"
+  },
+  {
+    "path": "web/src/SocialConnections.tsx",
+    "bytes": 4988,
+    "sha256": "8c8d18d0e146b036fb2cbb844fd2ad5674f622f80dff7811e6a7d170bd0650b0"
+  },
+  {
+    "path": "web/src/style.css",
+    "bytes": 21076,
+    "sha256": "0411721daebebc11959dae219ad373d670264efcb79e1e8a8ff5bd87342eff03"
+  },
+  {
+    "path": "web/src/TelegramLink.tsx",
+    "bytes": 2957,
+    "sha256": "0be80bdd6b284336a3cd026821edb3fa014a6933774b7b9f01e35ccaea637783"
+  },
+  {
+    "path": "web/src/ui.tsx",
+    "bytes": 3525,
+    "sha256": "b783ab81d2152069da0191cca53322c15e41ab8be7a7a050172f1cba743f526c"
+  },
+  {
+    "path": "web/tsconfig.json",
+    "bytes": 311,
+    "sha256": "3f1eecf08caf2022e9993ae2c4f651949f1daa58a797f19e142051dfb616d6c8"
+  },
+  {
+    "path": "web/vite.config.ts",
+    "bytes": 187,
+    "sha256": "f6176e5a3e11eff798fa08c4121cda12177693d10a46ef7e6cb3e0b312b74423"
+  },
+  {
+    "path": "Инструкция_ИИ_редактору.md",
+    "bytes": 20398,
+    "sha256": "c1bdc89a4c495d3781777e7391d4a6dae15209b1405547fa8ce9debbda42fbec"
+  },
+  {
+    "path": "Как_работать_с_ботом.md",
+    "bytes": 12454,
+    "sha256": "c38cbe01f52ae2cfd782871dbf31ba811ee9d95f8ff2a347833b5da28ea77b2d"
+  },
+  {
+    "path": "Основные и дополнительные визуальные элементы бренда/ЛОГОТИП/БЕЛЫЙ/RUS/.PNG/ЛОГОТИП.png",
+    "bytes": 48964,
+    "sha256": "2cbd40d363d1ca68af35840bcd477107d505cc95f19c24771a9be54e7e5df4a2"
+  },
+  {
+    "path": "Основные и дополнительные визуальные элементы бренда/ЛОГОТИП/ОСНОВНОЙ ЦВЕТ/RUS/.PNG/Логотип.png",
+    "bytes": 50530,
+    "sha256": "ae74554a266df31483f96949e63de3b922f7726b75e7e318e408fe908123e950"
+  },
+  {
+    "path": "Основные и дополнительные визуальные элементы бренда/ЛОГОТИП/ЧЕРНЫЙ/RUS/.PNG/ЛОГОТИП.png",
+    "bytes": 50401,
+    "sha256": "fe03920c784dab947c7faddf06e9a5ad0b4fdfda78793b439ad6ee1d41fb38e7"
+  },
+  {
+    "path": "Основные и дополнительные визуальные элементы бренда/ШРИФТЫ/ОСНОВНЫЕ/AVENIR NEXT CYR/avenirnextcyr-bold.ttf",
+    "bytes": 88540,
+    "sha256": "5f5482b3d9d687d674a5262ed3b20699a057b9e227f7e4c471d1a00189b8ff74"
+  },
+  {
+    "path": "Основные и дополнительные визуальные элементы бренда/ШРИФТЫ/ОСНОВНЫЕ/AVENIR NEXT CYR/avenirnextcyr-regular.ttf",
+    "bytes": 89020,
+    "sha256": "6f6e65cf063a3c39bd7cb6261299b5160230072fdbb064bd531a9c7767229d53"
+  },
+  {
+    "path": "Редакционные_правила_для_постов.md",
+    "bytes": 22744,
+    "sha256": "b643ccaaa177512604869c64d898f2d6737e1069bee91dcd3d3dedc5a50031df"
+  }
+]
