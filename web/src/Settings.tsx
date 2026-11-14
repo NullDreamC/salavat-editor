@@ -239,7 +239,8 @@ export function Employees({ company, currentUserId }: { company: Company; curren
         <button className="post-row employee-row" onClick={() => setSelected(user)}>
           <span className="row-icon"><UserRound size={17} /></span>
           <span className="post-row-copy"><strong>{user.name}</strong><small>{user.email}</small></span>
-          <span className="muted">{user.active === false ? 'Доступ отключён' : roles[user.role]}</span>
+          <span className="muted">{user.active === false ? 'Доступ отключён' :
+            user.role === 'editor' && user.can_approve ? 'Редактор с правом согласования' : roles[user.role]}</span>
           <ChevronRight size={17} className="row-chevron" />
         </button>
       </li>)}</ul>}
@@ -257,11 +258,13 @@ function EmployeeForm({ path, user, currentUserId, onClose, onSaved }: {
 }) {
   const action = useAction()
   const [resetPassword, setResetPassword] = useState(false)
+  const [role, setRole] = useState<Role>(user?.role ?? 'editor')
+  const [canApprove, setCanApprove] = useState(user?.can_approve === true)
   if (resetPassword && user) return <PasswordDialog reset={{ path: path + '/' + user.id + '/password', name: user.name }} onClose={onClose} />
   return <Modal title={user ? user.name : 'Новый сотрудник'} busy={action.busy} onClose={onClose}>
     <form className="form-stack modal-body" onSubmit={(event) => formAction(event, (form) => void action.run(async () => {
       const telegram = formText(form, 'telegram_id')
-      const fields = { role: formText(form, 'role') as Role, telegram_id: telegram || null }
+      const fields = { role, telegram_id: telegram || null, can_approve: role === 'editor' && canApprove }
       onSaved(user ? await api<User>(path + '/' + user.id, 'PATCH', { ...fields, active: form.has('active') }) :
         await api<User>(path, 'POST', {
           ...fields, name: formText(form, 'name'), email: formText(form, 'email'), password: String(form.get('password') ?? ''),
@@ -272,9 +275,13 @@ function EmployeeForm({ path, user, currentUserId, onClose, onSaved }: {
         <label>Почта<input name="email" type="email" required /></label>
         <label>Пароль<input name="password" type="password" autoComplete="new-password" minLength={10} maxLength={256} required /></label>
       </>}
-      <label>Роль<select name="role" defaultValue={user?.role ?? 'editor'}>
+      <label>Роль<select name="role" value={role} onChange={(event) => setRole(event.currentTarget.value as Role)}>
         <RoleOptions />
       </select></label>
+      {role === 'editor' && <label className="toggle-row">
+        <input type="checkbox" name="can_approve" checked={canApprove} onChange={(event) => setCanApprove(event.currentTarget.checked)} />
+        Согласование и публикация
+      </label>}
       <small className="muted">Администратор компании может отправлять и согласовывать публикации.</small>
       <label>ID пользователя Telegram<input name="telegram_id" inputMode="numeric" pattern="[1-9][0-9]{0,18}" defaultValue={user?.telegram_id ?? ''} /></label>
       {user && <label className="toggle-row"><input type="checkbox" name="active" defaultChecked={user.active !== false} />Доступ к компании</label>}

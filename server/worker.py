@@ -15,7 +15,7 @@ import httpx
 from .integrations import telegram_call, publish_telegram, message_is_addressed, IntegrationError, TelegramError
 from .webapp import configure_bot, menu_markup, public_url
 from .network import http_options
-from .domain import DomainError
+from .domain import DomainError, can_review
 from .photo_workflow import apply_photo, photo_directive
 from .logo_workflow import apply_logo, logo_options, logo_keyboard, post_buttons, CORNERS
 from .telegram_link import claim_link, protect_link_update
@@ -335,7 +335,7 @@ class Worker:
             return
         if text.startswith('/reject '):
             parts = text.split(maxsplit=2)
-            if user['role'] not in ('admin', 'approver') or len(parts) < 3 or not parts[1].isdigit():
+            if not can_review(user) or len(parts) < 3 or not parts[1].isdigit():
                 await self.send(token, chat_id, 'Укажите номер поста и причину. Нужны права согласующего.')
                 return
             post = self.service.post(cid, int(parts[1]))
@@ -509,12 +509,7 @@ class Worker:
         if task['status'] == 'needs_info' and not post['body'] and not post.get('logo_pending'):
             return
 
-        role = user['role']
-        if post['status'] == 'review' and role == 'admin':
-            with self.db.read() as conn:
-                if user['id'] not in reviewer_ids(conn, cid):
-                    role = 'editor'
-        buttons = post_buttons(post, role)
+        buttons = self.post_controls(cid, post, user)
         markup = {'inline_keyboard': buttons} if buttons else None
         if post.get('logo_pending'):
             try:
@@ -891,6 +886,14 @@ class Worker:
             text = 'Выберите действие.'
         await self.send(token, chat_id, text, reply_markup=menu_markup(public_url(self.db), role))
 
+    def post_controls(self, cid, post, user):
+        allowed = can_review(user) if user else None
+        if user and allowed and post.get('status') == 'review':
+            with self.db.read() as conn:
+                if configured_reviewer_ids(conn, cid) and user['id'] not in reviewer_ids(conn, cid):
+                    allowed = False
+        return post_buttons(post, user['role'] if user else None, can_approve=allowed)
+
     async def respond(self, company, token, chat_id, post, user=None):
         cid = company['id']
         if user is None and not str(chat_id).startswith('-'):
@@ -915,9 +918,9 @@ class Worker:
                     markup = logo_keyboard(post, options['variants'])
                     preview += '\nВыберите цвет и угол логотипа, затем нажмите «Применить».'
                 else:
-                    markup = {'inline_keyboard': post_buttons(post, user['role'] if user else None)}
+                    markup = {'inline_keyboard': self.post_controls(cid, post, user)}
             else:
-                markup = {'inline_keyboard': post_buttons(post, user['role'] if user else None)}
+                markup = {'inline_keyboard': self.post_controls(cid, post, user)}
             await self.send(token, chat_id, preview[:4096], reply_markup=markup)
             if post.get('status') == 'review' and user and str(user.get('telegram_id')) == str(chat_id):
                 self.state(f'notify:{cid}:{post["id"]}:{post["version"]}:review:{chat_id}', 'done')
@@ -951,7 +954,7 @@ class Worker:
             pid, version = int(raw_id), int(raw_version)
             if not user:
                 raise ValueError('Нет доступа.')
-            if action in ('approve', 'reject', 'publish') and user['role'] not in ('admin', 'approver'):
+            if action in ('approve', 'reject', 'publish') and not can_review(user):
                 raise ValueError('Нужны права согласующего.')
             if action == 'submit':
                 self.service.submit(cid, pid, version, actor=user)
@@ -1079,7 +1082,7 @@ class Worker:
                 )}
         approvers = {
             str(user['telegram_id']): user for user in people
-            if user['role'] in ('admin', 'approver') and (assigned is None or user['id'] in assigned)
+            if can_review(user) and (assigned is None or user['id'] in assigned)
         }
         authors = {user['id']: user for user in people}
         for post in self.service.posts(cid):
@@ -1091,7 +1094,7 @@ class Worker:
             if author and status != 'review':
                 recipients.setdefault(str(author['telegram_id']), author)
             for user in recipients.values():
-                if status == 'review' and user['role'] == 'admin' and post.get('platform', 'telegram') == 'telegram':
+                if status == 'review' and can_review(user) and post.get('platform', 'telegram') == 'telegram':
                     target = (user['id'], str(user['telegram_id']))
                     if any((post['id'], version, *target) in task_recipients for version in (None, post['version'])):
                         continue
@@ -1102,7 +1105,7 @@ class Worker:
                     can_approve = str(user['telegram_id']) in approvers
                     if status == 'review':
                         platform = {'vk': 'ВКонтакте', 'max': 'MAX'}.get(post.get('platform'), 'Telegram')
-                        buttons = post_buttons(post, user['role'])
+                        buttons = self.post_controls(cid, post, user)
                         text = f'Пост №{post["id"]}\nПлощадка: {platform}\nКанал: {post.get("channel_id") or "не выбран"}\nВремя: {post.get("scheduled_at") or "после ручной отправки"}'
                         if platform == 'Telegram':
                             media = self.service.publication_media(cid, post)
@@ -1121,7 +1124,7 @@ class Worker:
                         buttons = []
                         if can_approve and has_channel and not post.get('scheduled_at'):
                             buttons = [[{'text': 'Опубликовать', 'callback_data': f'publish:{post["id"]}:{post["version"]}'}]]
-                        buttons += post_buttons(post, user['role'])
+                        buttons += self.post_controls(cid, post, user)
                         note = ' Без публикации: канал не выбран.' if not has_channel else (' Отправка по расписанию.' if post.get('scheduled_at') else '')
                         await self.send(token, user['telegram_id'], f'Пост №{post["id"]} согласован.' + note, reply_markup={'inline_keyboard': buttons})
                     elif status == 'rejected':

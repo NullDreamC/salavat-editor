@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 from fastapi import Depends
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, StringConstraints
 
-from .domain import APPROVER_ROLES, DomainError, Service, audit_row
+from .domain import DomainError, Service, audit_row, can_review
 from .social_platforms import SocialPublicationError, _max_message_id, _vk_post_id
 
 
@@ -48,12 +48,13 @@ def configured_reviewer_ids(connection, company_id):
 
 
 def _eligible_reviewers(connection, company_id):
-    return [dict(row, active=True) for row in connection.execute(
-        "SELECT m.user_id AS id,m.role FROM memberships m JOIN users u ON u.id=m.user_id "
+    rows = connection.execute(
+        "SELECT m.user_id AS id,m.role,m.can_approve FROM memberships m JOIN users u ON u.id=m.user_id "
         "JOIN companies c ON c.id=m.company_id WHERE m.company_id=? AND c.archived_at IS NULL "
-        "AND m.active=1 AND u.is_admin=0 AND m.role IN ('admin','approver') ORDER BY m.user_id",
+        "AND m.active=1 AND u.is_admin=0 ORDER BY m.user_id",
         (company_id,),
-    )]
+    )
+    return [{"id": row["id"], "role": row["role"], "active": True} for row in rows if can_review(row)]
 
 
 def reviewer_ids(connection, company_id):
@@ -63,7 +64,7 @@ def reviewer_ids(connection, company_id):
 
 
 def require_reviewer(connection, company_id, actor):
-    Service.require_actor(connection, company_id, actor, APPROVER_ROLES)
+    Service.require_approval_actor(connection, company_id, actor)
     if actor is None:
         return
     assigned = configured_reviewer_ids(connection, company_id)
@@ -113,7 +114,7 @@ def reconcile_publication(service, company_id, post_id, payload, actor):
                                     publication_uncertain=0, feedback=None)
 
 
-def register_review_policy_routes(api, service, member, company_manager, approver):
+def register_review_policy_routes(api, service, company_manager, approver):
     @api.get("/companies/{cid}/review-policy")
     def policy(cid: int, user=Depends(company_manager)):
         with service.db.read() as connection:
@@ -128,13 +129,13 @@ def register_review_policy_routes(api, service, member, company_manager, approve
             options = _eligible_reviewers(connection, cid)
             assigned = sorted(set(payload.reviewer_ids))
             if not set(assigned).issubset(row["id"] for row in options):
-                raise DomainError("Можно назначить только действующих администраторов и согласующих компании.", 422)
+                raise DomainError("Можно назначить только действующих сотрудников с правом согласования.", 422)
             if assigned != configured_reviewer_ids(connection, cid):
                 connection.execute("DELETE FROM company_reviewers WHERE company_id=?", (cid,))
                 connection.executemany("INSERT INTO company_reviewers(company_id,user_id) VALUES(?,?)",
                                        ((cid, reviewer_id) for reviewer_id in assigned))
                 detail = ("Обновлён список назначенных согласующих." if assigned
-                          else "Согласование открыто всем администраторам и согласующим компании.")
+                          else "Согласование открыто всем сотрудникам с правом согласования.")
                 audit_row(connection, cid, "company.review_policy_updated", detail, user)
             return {"reviewer_ids": assigned, "options": options}
 

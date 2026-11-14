@@ -25,6 +25,8 @@ Worker cycles for Telegram, paid assistant tasks, scheduled jobs and monitored i
 
 Explicit post-creation requests within assistant conversations create a real publication rather than a prose-only answer. The request resolves its topic from conversation context, grounds content in company sources, and invokes the existing image/logo workflow when an image is requested. Request-to-post linkage preserves completed stages for retries. Ready posts enter review, never automatic publication; Telegram delivers their actual media and version-bound controls to the authorized requester. An uncertain delivery is not silently repeated.
 
+Membership `can_approve` defaults to false and grants editors post approval, rejection, publication, and publication reconciliation in that company only. Company admins may set it through employee create/patch; role changes clear it unless a company admin explicitly grants it with the new editor role. It does not grant company administration or inbox approval. Post actions recheck active membership and this capability in the transaction; Telegram buttons and reviewer notifications use the same eligibility. Explicit reviewer assignments still constrain approval/rejection/reconciliation. Global technical access records retain only ID, company, role, and status.
+
 `server.tunnel_runner` supervises the previously approved localhost.run configuration, reconnects after an activity timeout and updates the exact WebApp origin. A per-directory process lock prevents duplicate supervisors; `.runtime/tunnel.stop` stops it. Windows DPAPI credentials remain tied to the original account/computer; cloud migration requires new secret provisioning.
 
 ## HTTP interface

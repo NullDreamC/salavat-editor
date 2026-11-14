@@ -5,11 +5,12 @@ export const fundingNames: Record<FundingMode, string> = {
   salavat: 'Ключи Салаватстекло',
   shared: 'Общие ключи',
 }
-export type User = { id: number; name: string; email: string; role: Role; telegram_id?: string | null; active?: boolean }
+export type User = { id: number; name: string; email: string; role: Role; telegram_id?: string | null; active?: boolean; can_approve?: boolean }
 export type Company = {
   id: number
   name: string
   role: Role
+  can_approve?: boolean
   timezone: string
   calendar_enabled: boolean
   provider: 'openai' | 'yandex'

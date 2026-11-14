@@ -152,7 +152,7 @@ function PostEditor({ post, company, sources, sourceError, retrySources, onUpdat
   const action = useAction()
   const [base, setBase] = useState(post)
   const editable = company.role !== 'approver' && !['published', 'publishing'].includes(post.status) && !post.publication_uncertain
-  const reviewer = company.role !== 'editor'
+  const reviewer = company.role === 'admin' || company.role === 'approver' || (company.role === 'editor' && company.can_approve === true)
   const changedSources = sourceIds.length !== base.source_ids.length || sourceIds.some((id) => !base.source_ids.includes(id))
   const changed = platform !== (base.platform ?? 'telegram') || title !== base.title || body !== base.body || channel !== (base.channel_id ?? '') ||
     schedule !== (base.scheduled_at ? localDateTime(base.scheduled_at, company.timezone) : '') ||

@@ -6,8 +6,8 @@
   },
   {
     "path": "CONTRACT.md",
-    "bytes": 20906,
-    "sha256": "512fdfd17907459342a5c821925b05f8e2bb190b5c9029f291433464c7048d9c"
+    "bytes": 21577,
+    "sha256": "c332f56e4e3fae29559b811b802c02bf2ea73726639840a3f5c11e88c1123c02"
   },
   {
     "path": "docs/API_соцсетей.md",
@@ -31,8 +31,8 @@
   },
   {
     "path": "README.md",
-    "bytes": 32111,
-    "sha256": "a5faeeff878cb71bdbe11fe769429b35475e58a55c811bbb2e6a7313a14532bb"
+    "bytes": 33430,
+    "sha256": "fdf718813f89b0068958a347e8006304fc482028135bad565dd345453eb49ed1"
   },
   {
     "path": "requirements-dev.txt",
@@ -86,13 +86,13 @@
   },
   {
     "path": "server/db.py",
-    "bytes": 10810,
-    "sha256": "4e8f97c0aaed525cf10fae79b1fab89c077908f0a1db9b1e40f5cda7cacea4e8"
+    "bytes": 11293,
+    "sha256": "a65d6c947290613aa608b255d37821d481b76da633ef8169d8be372240828230"
   },
   {
     "path": "server/domain.py",
-    "bytes": 65190,
-    "sha256": "fc08646dd56aaa71294994fc4e4d6930759c553a16a5d6a002f0561d528ab67b"
+    "bytes": 65630,
+    "sha256": "3ce8889ffaedae2bd29d61029536f8a132e7ebd37d9e853234f8fddeca173661"
   },
   {
     "path": "server/inbox.py",
@@ -111,13 +111,13 @@
   },
   {
     "path": "server/logo_workflow.py",
-    "bytes": 7484,
-    "sha256": "ff23c0c973ef5bfc88322676331b4cff932880f8095d7739cd855465ea2db90d"
+    "bytes": 7589,
+    "sha256": "3daa4cb5f070e50249f2565ba205fa31e088a6c3a57d3d42f08e0ce42d8edc2b"
   },
   {
     "path": "server/main.py",
-    "bytes": 43336,
-    "sha256": "c77dd42ccff028fa43e943f29a2b20e9efc6dd6f0773aa3c0301e931b0ef24fb"
+    "bytes": 44733,
+    "sha256": "29232803ac8febb7830e8bda38aab90e9c8f6439c63a28a798f7cb2904ebe14f"
   },
   {
     "path": "server/network.py",
@@ -136,8 +136,8 @@
   },
   {
     "path": "server/review_policy.py",
-    "bytes": 7406,
-    "sha256": "a0866a1f4fa6f7b1575caa54704c42010d1ee1aaa888d422facd0a26f3e06375"
+    "bytes": 7413,
+    "sha256": "06c4d0ff39e9959305663baf63271b25a67f95e743a2d75b86cce94889bc0e84"
   },
   {
     "path": "server/setup_telegram.py",
@@ -181,8 +181,8 @@
   },
   {
     "path": "server/worker.py",
-    "bytes": 73027,
-    "sha256": "707dbcd52ef6bb26b1483fe1ef80fbe1596ae7517d0157b70f9aa78e98eea1ee"
+    "bytes": 73159,
+    "sha256": "e174556ad13e61983b1c64750091ecfa4b65d95cc53326dafad7b1624a8ebf09"
   },
   {
     "path": "start.cmd",
@@ -238,6 +238,16 @@
     "path": "tests/test_company_controls.py",
     "bytes": 9037,
     "sha256": "5dea6062e2ac36ada7e7e09856475bf725cbc737cbd9e1648aa4234609f45475"
+  },
+  {
+    "path": "tests/test_editor_approval.py",
+    "bytes": 7272,
+    "sha256": "871fac29c5c6e14dba8560045ca06d368a3d89726c4a686674414bfa97ab69c6"
+  },
+  {
+    "path": "tests/test_editor_telegram_permission.py",
+    "bytes": 4009,
+    "sha256": "916857962a8ce39b6208a11ab8379b954ce07b4453356879b7232601ec3565fc"
   },
   {
     "path": "tests/test_generation_claim.py",
@@ -360,14 +370,14 @@
     "sha256": "790e3169bc19b046fe55ba1da6d13b976c28363c8c00462a2195fe5faf260910"
   },
   {
-    "path": "web/dist/assets/index-C3nlYWfQ.js",
-    "bytes": 344900,
-    "sha256": "6696994619c591a75846545c5540fee56f2c7ad27f05de70e3c3411e80e77ee3"
-  },
-  {
     "path": "web/dist/assets/index-CZSGVKST.css",
     "bytes": 18299,
     "sha256": "83369e196d1432a05215660a0b7f2d11cb270756f9aafb5ba626518b3a354fcb"
+  },
+  {
+    "path": "web/dist/assets/index-fcmEMlOV.js",
+    "bytes": 345460,
+    "sha256": "180ba2de891d5831a7cba81d9e21f506ae0875f142d4cb3bc937d6a4a9f47eb6"
   },
   {
     "path": "web/dist/fonts/avenirnextcyr-demi.ttf",
@@ -382,7 +392,7 @@
   {
     "path": "web/dist/index.html",
     "bytes": 481,
-    "sha256": "7425fff989fc2bad6a14d479d3302a739b77d4d42ce4313655d0c11360161faa"
+    "sha256": "56a7126d0cb7c28932efeb9dabe647bd529ffe15821e36802b96664ea2823a1b"
   },
   {
     "path": "web/index.html",
@@ -421,8 +431,8 @@
   },
   {
     "path": "web/src/api.ts",
-    "bytes": 5483,
-    "sha256": "9c53dda129ac52f676f4c05a4c319fe1fd4e69be04793441d074e8e798eb6355"
+    "bytes": 5530,
+    "sha256": "dd2383a2b008cdaeec54b45d7f6d690eaa422e925fb733832b6e2330536f6b37"
   },
   {
     "path": "web/src/App.tsx",
@@ -481,8 +491,8 @@
   },
   {
     "path": "web/src/Posts.tsx",
-    "bytes": 30110,
-    "sha256": "9e85e2fa5346240c082022f94c8b5b87232b1c6b3f57d4da544fa6ce6abf927d"
+    "bytes": 30203,
+    "sha256": "5a8838ff11b6b4b5c0afb71939d4319bf8a7ad10edcfa401aed0ad2a970ec393"
   },
   {
     "path": "web/src/Reports.tsx",
@@ -491,13 +501,13 @@
   },
   {
     "path": "web/src/ReviewPolicy.tsx",
-    "bytes": 3984,
-    "sha256": "470faa7dae39f9ef13aad60433843cc3d27a5b645a6e7407bb41866435b61454"
+    "bytes": 4063,
+    "sha256": "5af1917ed3bd86ee4965afadbd401663ed77a8b4210bc7d500f864a41c6b6477"
   },
   {
     "path": "web/src/Settings.tsx",
-    "bytes": 21954,
-    "sha256": "03b49d667ddf03d438309bad5541bc6ad4db2a190a5c6a5438b1632c4afe98f9"
+    "bytes": 22538,
+    "sha256": "30635c01890e19d99cf830f187eaa1fd4c2bde2240709d167717456960b00b5c"
   },
   {
     "path": "web/src/SocialConnections.tsx",
@@ -536,8 +546,8 @@
   },
   {
     "path": "Как_работать_с_ботом.md",
-    "bytes": 12454,
-    "sha256": "c38cbe01f52ae2cfd782871dbf31ba811ee9d95f8ff2a347833b5da28ea77b2d"
+    "bytes": 13167,
+    "sha256": "c872eeb213d56b8a085fa49ba447eab15582fd54ac14801d8c12c764fcec3a7c"
   },
   {
     "path": "Основные и дополнительные визуальные элементы бренда/ЛОГОТИП/БЕЛЫЙ/RUS/.PNG/ЛОГОТИП.png",

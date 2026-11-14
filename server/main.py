@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_vali
 from starlette.middleware.gzip import GZipMiddleware
 
 from .db import Database, ROOT, hash_password, verify_password
-from .domain import APPROVER_ROLES, EDITOR_ROLES, MAX_UPLOAD_SIZE, DomainError, Service, audit_row
+from .domain import EDITOR_ROLES, MAX_UPLOAD_SIZE, DomainError, Service, audit_row, can_review
 from .webapp import public_url, WebAppHostMiddleware
 from .knowledge import initialize_knowledge, register_knowledge_routes
 from .social_platforms import initialize_social, register_social_routes
@@ -114,13 +114,15 @@ class UserCreate(Body):
     email: Email
     password: Password | None = None
     role: Role
+    can_approve: bool = Field(default=False, strict=True)
     telegram_id: TelegramID | Literal[""] | int | None = None
 
 
 class UserPatch(Patch):
-    role: Literal["admin", "editor", "approver"] | None = None
+    role: Role | None = None
     telegram_id: TelegramID | Literal[""] | int | None = None
     active: bool | None = None
+    can_approve: Annotated[bool, Field(strict=True)] | None = None
 
 
 class AccessPatch(Patch):
@@ -337,7 +339,7 @@ def create_app(db=None, *, start_worker=False):
             raise DomainError("Это действие доступно только главному администратору.", 403)
         return user
 
-    def tenant(roles=None, *, allow_global=False):
+    def tenant(roles=None, *, allow_global=False, require_review=False):
         def verify(cid: int, user=Depends(current_user)):
             if user["is_admin"]:
                 if not allow_global:
@@ -346,20 +348,22 @@ def create_app(db=None, *, start_worker=False):
                 return user
             with db.read() as connection:
                 member = connection.execute(
-                    "SELECT m.role FROM memberships m JOIN companies c ON c.id=m.company_id "
+                    "SELECT m.role,m.can_approve FROM memberships m JOIN companies c ON c.id=m.company_id "
                     "WHERE m.company_id=? AND m.user_id=? AND m.active=1 AND c.archived_at IS NULL", (cid, user["id"]),
                 ).fetchone()
             if member is None:
                 raise DomainError("Компания не найдена.", 404)
             if roles is not None and member["role"] not in roles:
                 raise DomainError("Недостаточно прав для этого действия.", 403)
-            return {**user, "role": member["role"]}
+            if require_review and not can_review(member):
+                raise DomainError("Недостаточно прав для этого действия.", 403)
+            return {**user, "role": member["role"], "can_approve": bool(member["can_approve"])}
 
         return verify
 
     member = tenant()
     editor = tenant(EDITOR_ROLES)
-    approver = tenant(APPROVER_ROLES)
+    approver = tenant(require_review=True)
     admin = tenant({"admin"})
     company_manager = tenant({"admin"}, allow_global=True)
     company_reader = tenant(allow_global=True)
@@ -471,7 +475,9 @@ def create_app(db=None, *, start_worker=False):
                 name = payload.name
                 uid = connection.execute("INSERT INTO users(name,email,password_hash) VALUES(?,?,?)", (name, payload.email, encoded)).lastrowid
             connection.execute("INSERT INTO memberships(company_id,user_id,role) VALUES(?,?,?) ON CONFLICT(company_id,user_id) "
-                               "DO UPDATE SET role=excluded.role,active=1", (row["company_id"], uid, row["role"]))
+                               "DO UPDATE SET role=excluded.role,active=1,can_approve=CASE "
+                               "WHEN memberships.role=excluded.role THEN memberships.can_approve ELSE 0 END",
+                               (row["company_id"], uid, row["role"]))
             connection.execute("UPDATE invitations SET used_at=? WHERE id=?", (int(time.time()), row["id"]))
             audit_row(connection, row["company_id"], "invitation.accepted", f"Приглашение принято профилем №{uid}.", uid)
             session_token = start_session(connection, uid)
@@ -498,9 +504,12 @@ def create_app(db=None, *, start_worker=False):
                                      (cid, user_id)).fetchone()
             if row is None:
                 raise DomainError("Профиль не найден.", 404)
-            for key, value in changes.items():
-                connection.execute(f"UPDATE memberships SET {key}=? WHERE company_id=? AND user_id=?", (value, cid, user_id))
+            if changes.get("role", row["role"]) != row["role"]:
+                changes["can_approve"] = False
             if changes:
+                assignments = ",".join(f"{key}=?" for key in changes)
+                connection.execute(f"UPDATE memberships SET {assignments} WHERE company_id=? AND user_id=?",
+                                   (*changes.values(), cid, user_id))
                 connection.execute("DELETE FROM sessions WHERE user_id=?", (user_id,))
                 audit_row(connection, cid, "member.access", f"Изменён доступ профиля №{user_id}.", user)
             return access_record(connection.execute("SELECT * FROM memberships WHERE company_id=? AND user_id=?", (cid, user_id)).fetchone())
@@ -585,10 +594,11 @@ def create_app(db=None, *, start_worker=False):
             return [{**company, "role": "super_admin"} for company in service.companies()]
         with db.read() as connection:
             rows = connection.execute(
-                "SELECT c.*,m.role FROM companies c JOIN memberships m ON c.id=m.company_id "
+                "SELECT c.*,m.role,m.can_approve FROM companies c JOIN memberships m ON c.id=m.company_id "
                 "WHERE m.user_id=? AND m.active=1 AND c.archived_at IS NULL ORDER BY c.id", (user["id"],),
             )
-            return [{**service._company_data(row), "role": row["role"]} for row in rows]
+            return [{**service._company_data(row), "role": row["role"], "can_approve": bool(row["can_approve"])}
+                    for row in rows]
 
     @api.post("/companies", status_code=201)
     def add_company(payload: CompanyCreate, user=Depends(require_global_admin)):
@@ -632,6 +642,8 @@ def create_app(db=None, *, start_worker=False):
         tg_id = telegram_id(payload.telegram_id)
         with db.transaction() as connection:
             service.require_actor(connection, cid, user, {"admin"})
+            if payload.can_approve and payload.role != "editor":
+                raise DomainError("Это право можно выдать только редактору.", 422)
             existing = connection.execute("SELECT * FROM users WHERE email=?", (payload.email,)).fetchone()
             if existing:
                 raise DomainError("Этот адрес уже используется. Добавьте сотрудника по приглашению.", 409)
@@ -640,8 +652,8 @@ def create_app(db=None, *, start_worker=False):
                     raise DomainError("Для нового сотрудника задайте пароль из 10 символов или длиннее.", 422)
                 user_id = connection.execute("INSERT INTO users(name,email,password_hash) VALUES(?,?,?)",
                                              (payload.name, payload.email, hash_password(payload.password))).lastrowid
-            connection.execute("INSERT INTO memberships(company_id,user_id,role,telegram_id) VALUES(?,?,?,?)",
-                               (cid, user_id, payload.role, tg_id))
+            connection.execute("INSERT INTO memberships(company_id,user_id,role,telegram_id,can_approve) VALUES(?,?,?,?,?)",
+                               (cid, user_id, payload.role, tg_id, payload.can_approve))
             audit_row(connection, cid, "member.created", f"Предоставлен доступ сотруднику №{user_id}.", user)
         return next(item for item in service.telegram_users(cid) if item["id"] == user_id)
 
@@ -655,9 +667,16 @@ def create_app(db=None, *, start_worker=False):
             if row is None:
                 raise DomainError("Участник компании не найден.", 404)
             service.require_actor(connection, cid, user, {"admin"})
+            role = changes.get("role", row["role"])
+            if changes.get("can_approve") and role != "editor":
+                raise DomainError("Это право можно выдать только редактору.", 422)
+            if role != row["role"]:
+                changes.setdefault("can_approve", False)
             ensure_admin_remains(connection, cid, row, changes)
-            for key, value in changes.items():
-                connection.execute(f"UPDATE memberships SET {key}=? WHERE company_id=? AND user_id=?", (value, cid, user_id))
+            if changes:
+                assignments = ",".join(f"{key}=?" for key in changes)
+                connection.execute(f"UPDATE memberships SET {assignments} WHERE company_id=? AND user_id=?",
+                                   (*changes.values(), cid, user_id))
             if changes.get("active") is False:
                 connection.execute("DELETE FROM sessions WHERE user_id=? AND NOT EXISTS "
                                    "(SELECT 1 FROM memberships m JOIN companies c ON c.id=m.company_id "
@@ -799,7 +818,7 @@ def create_app(db=None, *, start_worker=False):
     register_analytics_routes(api, service, member, editor)
     register_inbox_routes(api, service, member, editor)
     register_task_routes(api, service, member, editor)
-    register_review_policy_routes(api, service, member, company_manager, approver)
+    register_review_policy_routes(api, service, company_manager, approver)
     register_report_routes(api, service, member, editor)
     app.include_router(api)
 

@@ -39,6 +39,14 @@ class DomainError(Exception):
         self.status_code = status_code
 
 
+def can_review(member):
+    member = dict(member)
+    return bool(member.get("active", True)) and (
+        member.get("role") in APPROVER_ROLES
+        or (member.get("role") == "editor" and bool(member.get("can_approve")))
+    )
+
+
 def utc_now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -143,7 +151,7 @@ class Service:
         self.db = db
 
     @staticmethod
-    def require_actor(connection, company_id, actor, roles):
+    def require_actor(connection, company_id, actor, roles, *, allow_editor_approval=False):
         Service._company_row(connection, company_id)
         if actor is None:
             return
@@ -154,13 +162,17 @@ class Service:
                 return
             raise DomainError("Главный администратор не имеет доступа к данным сотрудников.", 403)
         membership = connection.execute(
-            "SELECT role,telegram_id FROM memberships WHERE company_id=? AND user_id=? AND active=1",
+            "SELECT role,telegram_id,can_approve FROM memberships WHERE company_id=? AND user_id=? AND active=1",
             (company_id, actor_id),
         ).fetchone()
-        if membership is None or membership["role"] not in roles:
+        if membership is None or not (membership["role"] in roles or (allow_editor_approval and can_review(membership))):
             raise DomainError("Недостаточно прав для этого действия.", 403)
         if isinstance(actor, dict) and actor.get("telegram_id") and actor["telegram_id"] != membership["telegram_id"]:
             raise DomainError("Доступ через Telegram отозван.", 403)
+
+    @staticmethod
+    def require_approval_actor(connection, company_id, actor):
+        Service.require_actor(connection, company_id, actor, APPROVER_ROLES, allow_editor_approval=True)
 
     @staticmethod
     def _company_row(connection, company_id):
@@ -348,13 +360,13 @@ class Service:
     @staticmethod
     def _user_data(row):
         return {"id": row["id"], "name": row["name"], "email": row["email"], "role": row["role"],
-                "telegram_id": row["telegram_id"], "active": bool(row["active"])}
+                "telegram_id": row["telegram_id"], "active": bool(row["active"]), "can_approve": bool(row["can_approve"])}
 
     def telegram_users(self, company_id):
         with self.db.read() as connection:
             self._company_row(connection, company_id)
             rows = connection.execute(
-                "SELECT u.id,u.name,u.email,m.role,m.active,m.telegram_id FROM memberships m "
+                "SELECT u.id,u.name,u.email,m.role,m.active,m.telegram_id,m.can_approve FROM memberships m "
                 "JOIN users u ON u.id=m.user_id WHERE m.company_id=? AND u.is_admin=0 ORDER BY u.name,u.id", (company_id,),
             )
             return [self._user_data(row) for row in rows]
@@ -362,7 +374,7 @@ class Service:
     def telegram_members(self, company_id, telegram_id):
         with self.db.read() as connection:
             row = connection.execute(
-                "SELECT u.id,u.name,u.email,m.role,m.active,m.telegram_id FROM memberships m "
+                "SELECT u.id,u.name,u.email,m.role,m.active,m.telegram_id,m.can_approve FROM memberships m "
                 "JOIN users u ON u.id=m.user_id JOIN companies c ON c.id=m.company_id "
                 "WHERE m.company_id=? AND m.telegram_id=? AND m.active=1 AND u.is_admin=0 AND c.archived_at IS NULL",
                 (company_id, str(telegram_id)),
@@ -387,7 +399,7 @@ class Service:
                     raise DomainError("Измените Telegram ID администратора в веб-кабинете.", 409)
                 if active and existing["role"] != role:
                     connection.execute(
-                        "UPDATE memberships SET role=?,active=1 WHERE company_id=? AND user_id=?",
+                        "UPDATE memberships SET role=?,active=1,can_approve=0 WHERE company_id=? AND user_id=?",
                         (role, company_id, existing["user_id"]),
                     )
                 elif active:
@@ -886,7 +898,6 @@ class Service:
         from .review_policy import require_reviewer
         with self.db.transaction() as connection:
             row = self._post_row(connection, company_id, post_id)
-            self.require_actor(connection, company_id, actor, APPROVER_ROLES)
             require_reviewer(connection, company_id, actor)
             self._check_version(row, version)
             if row["status"] != "review" or json.loads(row["questions"]):
@@ -901,7 +912,6 @@ class Service:
         from .review_policy import require_reviewer
         with self.db.transaction() as connection:
             row = self._post_row(connection, company_id, post_id)
-            self.require_actor(connection, company_id, actor, APPROVER_ROLES)
             require_reviewer(connection, company_id, actor)
             self._check_version(row, version)
             if row["status"] not in {"review", "approved"}:
@@ -952,7 +962,7 @@ class Service:
     async def publish(self, company_id, post_id, version, *, actor=None, scheduled=False):
         with self.db.transaction() as connection:
             row = self._post_row(connection, company_id, post_id)
-            self.require_actor(connection, company_id, actor, APPROVER_ROLES)
+            self.require_approval_actor(connection, company_id, actor)
             self._check_version(row, version)
             if row["status"] != "approved" or not row["approved_snapshot"]:
                 raise DomainError("Публиковать можно только согласованную версию поста.", 409)

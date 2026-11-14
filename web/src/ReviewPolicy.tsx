@@ -50,7 +50,7 @@ export function ReviewPolicy({ company }: { company: Company }) {
               <select value={selection.mode} onChange={event => {
                 update({ ...selection, mode: event.currentTarget.value === 'assigned' ? 'assigned' : 'all' })
               }}>
-                <option value="all">Все администраторы и согласующие компании</option>
+                <option value="all">Все сотрудники с правом согласования</option>
                 <option value="assigned">Только выбранные профили</option>
               </select>
             </label>
@@ -64,7 +64,7 @@ export function ReviewPolicy({ company }: { company: Company }) {
                       ? [...selection.ids, option.id]
                       : selection.ids.filter(id => id !== option.id),
                   })} />
-                Профиль #{option.id} · {roles[option.role]}
+                Профиль #{option.id} · {option.role === 'editor' ? 'Редактор с правом согласования' : roles[option.role]}
               </label>)}
               {unavailable.map(id => <label className="toggle-row" key={id}>
                 <input type="checkbox" checked onChange={() => update({

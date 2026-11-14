@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS memberships (
     company_id INTEGER NOT NULL REFERENCES companies(id),
     user_id INTEGER NOT NULL REFERENCES users(id),
     role TEXT NOT NULL CHECK(role IN ('admin','editor','approver')),
+    can_approve INTEGER NOT NULL DEFAULT 0 CHECK(can_approve=0 OR (can_approve=1 AND role='editor')),
     telegram_id TEXT,
     active INTEGER NOT NULL DEFAULT 1,
     PRIMARY KEY(company_id,user_id),
@@ -170,6 +171,10 @@ class Database:
             if "funding_mode" not in columns:
                 connection.execute("ALTER TABLE companies ADD COLUMN funding_mode TEXT NOT NULL DEFAULT 'own' "
                                    "CHECK(funding_mode IN ('own','salavat','shared'))")
+            membership_columns = {column["name"] for column in connection.execute("PRAGMA table_info(memberships)")}
+            if "can_approve" not in membership_columns:
+                connection.execute("ALTER TABLE memberships ADD COLUMN can_approve INTEGER NOT NULL DEFAULT 0 "
+                                   "CHECK(can_approve=0 OR (can_approve=1 AND role='editor'))")
             post_columns = {column["name"] for column in connection.execute("PRAGMA table_info(posts)")}
             if "platform" not in post_columns:
                 connection.execute("ALTER TABLE posts ADD COLUMN platform TEXT NOT NULL DEFAULT 'telegram'")

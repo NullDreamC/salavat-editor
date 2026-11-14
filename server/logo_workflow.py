@@ -101,11 +101,12 @@ def logo_keyboard(post, variants, variant=None, corner=None):
     return {'inline_keyboard': [row for row in rows if row]}
 
 
-def post_buttons(post, role=None):
+def post_buttons(post, role=None, *, can_approve=None):
     pid, version = post['id'], post['version']
     rows = []
     if not post.get('logo_pending'):
-        if post.get('status') == 'review' and role != 'editor':
+        approval_allowed = role != 'editor' if can_approve is None else can_approve
+        if post.get('status') == 'review' and approval_allowed:
             rows.append([{'text': 'Одобрить', 'callback_data': f'approve:{pid}:{version}'},
                          {'text': 'Отклонить', 'callback_data': f'reject:{pid}:{version}'}])
         elif post.get('status') not in {'review', 'approved', 'published', 'publishing'} and role != 'approver':
