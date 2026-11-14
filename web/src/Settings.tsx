@@ -8,6 +8,7 @@ import { Invitations, RoleOptions } from './Access'
 import { BrandSettings } from './BrandSettings'
 import { SocialConnections } from './SocialConnections'
 import { ReviewPolicy } from './ReviewPolicy'
+import { DeleteCompanyDialog } from './CompanyManagement'
 
 export function CompanySettings({ company, onUpdate, onRemove }: {
   company: Company; onUpdate: (value: Company) => void; onRemove?: () => void
@@ -16,9 +17,8 @@ export function CompanySettings({ company, onUpdate, onRemove }: {
   const load = useCallback(() => api<Settings>(path + '/settings'), [path])
   const settings = useData(load)
   const [confirmRemoval, setConfirmRemoval] = useState(false)
-  const removal = useAction()
   return <>
-    <PageHeader title="Настройки" action={onRemove && <button className="button danger" onClick={() => setConfirmRemoval(true)}>Убрать компанию</button>} />
+    <PageHeader title="Настройки" action={onRemove && <button className="button danger" onClick={() => setConfirmRemoval(true)}>Удалить компанию</button>} />
     <ErrorMessage message={settings.error} retry={settings.retry} />
     {settings.data ? <SettingsForm value={settings.data} path={path} onSaved={(value) => {
       settings.setData(value)
@@ -27,23 +27,9 @@ export function CompanySettings({ company, onUpdate, onRemove }: {
     {settings.data && <BrandSettings path={path} />}
     {settings.data && <SocialConnections company={company} />}
     {settings.data && <ReviewPolicy company={company} />}
-    {confirmRemoval && <Modal title="Убрать компанию" busy={removal.busy} onClose={() => {
-      removal.setError('')
-      setConfirmRemoval(false)
-    }}>
-      <div className="modal-body form-stack">
-        <p>Компания «{company.name}» исчезнет из списка. Материалы и публикации сохранятся в базе.</p>
-        <ErrorMessage message={removal.error} />
-        <div className="modal-actions">
-          <button className="button secondary" disabled={removal.busy} onClick={() => setConfirmRemoval(false)}>Отмена</button>
-          <button className="button danger" disabled={removal.busy} onClick={() => void removal.run(async () => {
-            await api(path, 'DELETE')
-            setConfirmRemoval(false)
-            onRemove?.()
-          })}>Убрать компанию</button>
-        </div>
-      </div>
-    </Modal>}
+    {confirmRemoval && <DeleteCompanyDialog company={company} onClose={() => setConfirmRemoval(false)} onRemoved={() => {
+      setConfirmRemoval(false); onRemove?.()
+    }} />}
   </>
 }
 
@@ -293,7 +279,7 @@ function EmployeeForm({ path, user, currentUserId, onClose, onSaved }: {
 }
 
 const actionNames: Record<string, string> = {
-  'member.access': 'Изменён доступ', 'invitation.created': 'Создано приглашение', 'invitation.accepted': 'Приглашение принято',
+  'member.access': 'Изменён доступ', 'member.removed': 'Удалён доступ', 'invitation.created': 'Создано приглашение', 'invitation.accepted': 'Приглашение принято',
   'account.password_changed': 'Пароль изменён', 'account.password_reset': 'Пароль сброшен администратором',
   'company.created': 'Создана компания', 'company.settings': 'Изменены настройки',
   'member.created': 'Предоставлен доступ', 'member.edited': 'Изменён доступ', 'member.telegram': 'Изменён доступ к боту',

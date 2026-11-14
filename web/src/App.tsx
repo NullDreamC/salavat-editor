@@ -18,6 +18,7 @@ import { Analytics } from './Analytics'
 import { Reports } from './Reports'
 import { Research } from './Research'
 import { Billing } from './Billing'
+import { CompanyManagement } from './CompanyManagement'
 
 const routes = [
   { id: 'access', label: 'Доступы', icon: KeyRound },
@@ -112,6 +113,7 @@ function Workspace({ user, signOut, passwordChanged }: { user: User; signOut: ()
   const [companyId, setCompanyId] = useState<number>()
   const [route, setRoute] = useState<Route>(user.role === 'super_admin' ? 'access' : 'posts')
   const [showCreate, setShowCreate] = useState(false)
+  const [manageCompanies, setManageCompanies] = useState(false)
   const [newPost, setNewPost] = useState<number[] | null>(null)
   const [sessionExpired, setSessionExpired] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
@@ -136,8 +138,11 @@ function Workspace({ user, signOut, passwordChanged }: { user: User; signOut: ()
   ))
   function removeCompany(id: number) {
     companies.setData((current) => current?.filter((item) => item.id !== id))
-    setCompanyId(undefined)
-    setRoute('access')
+    if (company?.id === id) {
+      setCompanyId(undefined)
+      setNewPost(null)
+      setRoute('access')
+    }
   }
 
   useEffect(() => {
@@ -153,11 +158,13 @@ function Workspace({ user, signOut, passwordChanged }: { user: User; signOut: ()
         <Building2 size={17} aria-hidden="true" />
         <select aria-label="Компания" value={company?.id ?? ''} onChange={(event) => {
           if (event.target.value === 'new') setShowCreate(true)
+          else if (event.target.value === 'manage') setManageCompanies(true)
           else pickCompany(Number(event.target.value))
         }}>
           {!company && <option value="">Компания</option>}
           {companies.data?.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           {isSuper && companies.data && <option value="new">Новая компания…</option>}
+          {isSuper && companies.data && <option value="manage">Добавить / удалить компании…</option>}
         </select>
         <ChevronDown size={15} aria-hidden="true" />
       </div>
@@ -207,6 +214,9 @@ function Workspace({ user, signOut, passwordChanged }: { user: User; signOut: ()
     </main>
     {passwordOpen && <PasswordDialog onClose={() => setPasswordOpen(false)} onChanged={passwordChanged} />}
     {telegramOpen && company && !isSuper && <TelegramLink company={company} onClose={() => setTelegramOpen(false)} />}
+    {manageCompanies && isSuper && <CompanyManagement companies={companies.data ?? []} onClose={() => setManageCompanies(false)}
+      onPick={id => { pickCompany(id); setManageCompanies(false) }}
+      onCreate={() => { setManageCompanies(false); action.setError(''); setShowCreate(true) }} onRemove={removeCompany} />}
     {showCreate && <Modal title="Новая компания" busy={action.busy} onClose={() => { action.setError(''); setShowCreate(false) }}>
       <form className="form-stack modal-body" onSubmit={(event) => formAction(event, (form) => void action.run(async () => {
         const next = await api<Company>('/companies', 'POST', { name: formText(form, 'name') })

@@ -6,8 +6,8 @@
   },
   {
     "path": "CONTRACT.md",
-    "bytes": 26144,
-    "sha256": "d9f884d976d4b6049d9c8c1a75d58f4c095612eba82930efd43065e63a8b6175"
+    "bytes": 26870,
+    "sha256": "fcb250284b912d806b8ea045c7005f30373457984e7344c1ca763a8c5dfa2328"
   },
   {
     "path": "docs/API_соцсетей.md",
@@ -36,13 +36,13 @@
   },
   {
     "path": "docs/Статус_ТЗ.md",
-    "bytes": 10697,
-    "sha256": "1fd334fe8142e5db5c3fc622c41673714815c15257ce5d0eb0d1a8a04262c122"
+    "bytes": 11331,
+    "sha256": "40752a8e3fa266c4723dbd1cedf660fdece13be6e69d4ec8f6a0b842a7073ac7"
   },
   {
     "path": "README.md",
-    "bytes": 35206,
-    "sha256": "ee45d2177824105925a60c806a53c7a595ffac36090142bb9781192cde67e914"
+    "bytes": 36483,
+    "sha256": "9915b6f0f78fd2791ec01dd81a0f6401e90ada542afc3f0148dd87a7367772a5"
   },
   {
     "path": "requirements-dev.txt",
@@ -146,8 +146,8 @@
   },
   {
     "path": "server/main.py",
-    "bytes": 45773,
-    "sha256": "cf5be81f15793e040a266673825632c4ee5cd5f285fb4df55612901b8f0c43da"
+    "bytes": 47542,
+    "sha256": "fb062262a3b095865e49136201567d8386e83b3f3401d2af4149f72f61124735"
   },
   {
     "path": "server/network.py",
@@ -253,6 +253,11 @@
     "path": "tests/browser_smoke.py",
     "bytes": 18603,
     "sha256": "199c312c8d02f14fc06d4495f6775beb4529964d1265c67d3821e2d8abcaf82f"
+  },
+  {
+    "path": "tests/test_access_removal.py",
+    "bytes": 2819,
+    "sha256": "9d30642f8737d7b897e0b055a335e48aba69d69ea189b806258615298d6e4a9c"
   },
   {
     "path": "tests/test_analytics.py",
@@ -460,14 +465,14 @@
     "sha256": "790e3169bc19b046fe55ba1da6d13b976c28363c8c00462a2195fe5faf260910"
   },
   {
+    "path": "web/dist/assets/index-CrTJlVI1.js",
+    "bytes": 402002,
+    "sha256": "50c91e10377351fefe0c091f23bba15a0df906a10ffacf23ce114c8ad057cd75"
+  },
+  {
     "path": "web/dist/assets/index-CZSGVKST.css",
     "bytes": 18299,
     "sha256": "83369e196d1432a05215660a0b7f2d11cb270756f9aafb5ba626518b3a354fcb"
-  },
-  {
-    "path": "web/dist/assets/index-Dupn8D79.js",
-    "bytes": 399529,
-    "sha256": "788ebd24b209873565dff0398ea17eef803401b3f864a1d20d1e17258a319e0a"
   },
   {
     "path": "web/dist/fonts/avenirnextcyr-demi.ttf",
@@ -482,7 +487,7 @@
   {
     "path": "web/dist/index.html",
     "bytes": 481,
-    "sha256": "39723afa8fcf4cc0b022b8b2c6e39d2b9a39550d0493d3d6021b24a43aa20716"
+    "sha256": "f9fefb0aa7157a58c51bed631ff7d89480147081fb719c87e9ce659122d0c742"
   },
   {
     "path": "web/index.html",
@@ -511,8 +516,8 @@
   },
   {
     "path": "web/src/Access.tsx",
-    "bytes": 7026,
-    "sha256": "64fbec1150542cbfa8b72ff063bac6e119522b4ae2803b65a1992207baa4898e"
+    "bytes": 8267,
+    "sha256": "ff5e49f49f9e78623656e9a2f4c85dcd813c44b694213878ee1ab8404cc3c688"
   },
   {
     "path": "web/src/Analytics.tsx",
@@ -526,8 +531,8 @@
   },
   {
     "path": "web/src/App.tsx",
-    "bytes": 13461,
-    "sha256": "4cbf6e9090e9335364c664c9df087d6f3e4a8495a43ff47c2b0dcdfd306c5f78"
+    "bytes": 14169,
+    "sha256": "6af59736a0a506b9d400e968908b6656dfd24c57cca2c1ae97edf18c8d42692b"
   },
   {
     "path": "web/src/AssistantTasks.tsx",
@@ -553,6 +558,11 @@
     "path": "web/src/Calendar.tsx",
     "bytes": 7536,
     "sha256": "3b8c6149db6624eb4c5bf7ce15683daa9ca0478353f5c2d4950e598530fa8c7d"
+  },
+  {
+    "path": "web/src/CompanyManagement.tsx",
+    "bytes": 2491,
+    "sha256": "11d3f6a4ee29d04ff9b020d78841b2aa819fd3e7d23781b6513de85efa3b34b0"
   },
   {
     "path": "web/src/ContentPlan.tsx",
@@ -616,8 +626,8 @@
   },
   {
     "path": "web/src/Settings.tsx",
-    "bytes": 22213,
-    "sha256": "49b4f6f8d5f2234563ffbcfede00f21a00e88fbbe7b02297f680aa32a0822392"
+    "bytes": 21555,
+    "sha256": "139ed4c58ecc1bb15f2d93d7382a9c245c05e4014c02c04161ee88e7a8cd0e9c"
   },
   {
     "path": "web/src/SocialConnections.tsx",

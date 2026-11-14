@@ -526,6 +526,30 @@ def create_app(db=None, *, start_worker=False):
                 audit_row(connection, cid, "member.access", f"Изменён доступ профиля №{user_id}.", user)
             return access_record(connection.execute("SELECT * FROM memberships WHERE company_id=? AND user_id=?", (cid, user_id)).fetchone())
 
+    @api.delete("/companies/{cid}/access/{user_id}", status_code=204)
+    def access_remove(cid: int, user_id: int, request: Request, user=Depends(require_global_admin)):
+        with db.transaction() as connection:
+            actor = recheck_session(connection, request, user["id"])
+            if not actor["is_admin"]:
+                raise DomainError("Недостаточно прав.", 403)
+            service._company_row(connection, cid)
+            row = connection.execute(
+                "SELECT m.user_id FROM memberships m JOIN users u ON u.id=m.user_id "
+                "WHERE m.company_id=? AND m.user_id=? AND u.is_admin=0", (cid, user_id)
+            ).fetchone()
+            if row is None:
+                raise DomainError("Профиль не найден.", 404)
+            connection.execute("DELETE FROM memberships WHERE company_id=? AND user_id=?", (cid, user_id))
+            if connection.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='telegram_links'").fetchone():
+                connection.execute("DELETE FROM telegram_links WHERE company_id=? AND user_id=?", (cid, user_id))
+            connection.execute("UPDATE invitations SET revoked=1 WHERE company_id=? AND created_by=? AND used_at IS NULL",
+                               (cid, user_id))
+            connection.execute("DELETE FROM sessions WHERE user_id=? AND NOT EXISTS "
+                               "(SELECT 1 FROM memberships m JOIN companies c ON c.id=m.company_id "
+                               "WHERE m.user_id=? AND m.active=1 AND c.archived_at IS NULL)", (user_id, user_id))
+            audit_row(connection, cid, "member.removed", f"Удалён доступ профиля №{user_id}.", user)
+        return Response(status_code=204)
+
     @api.get("/auth/setup")
     def setup_status():
         with db.read() as connection:

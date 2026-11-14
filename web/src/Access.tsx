@@ -47,26 +47,38 @@ export function AccessPage({ company }: { company: Company }) {
   const load = useCallback(() => api<Access[]>(path), [path])
   const access = useData(load)
   const [selected, setSelected] = useState<Access>()
+  const [confirmRemoval, setConfirmRemoval] = useState(false)
   const action = useAction()
   return <>
     <PageHeader title="Доступы" />
     <ErrorMessage message={access.error} retry={access.retry} />
     {!access.data ? !access.error && <Loading /> : access.data.length ? <ul className="surface data-list">{access.data.map(profile =>
-      <li key={profile.id}><button className="post-row employee-row" onClick={() => { action.setError(''); setSelected(profile) }}>
+      <li key={profile.id}><button className="post-row employee-row" onClick={() => { action.setError(''); setConfirmRemoval(false); setSelected(profile) }}>
         <span className="row-icon"><KeyRound size={17} /></span><span className="post-row-copy"><strong>Профиль #{profile.id}</strong><small>{company.name}</small></span>
         <span className="muted">{roles[profile.role]} · {profile.active ? 'Активен' : 'Отключён'}</span>
       </button></li>)}</ul> : <div className="surface"><Empty icon={<KeyRound size={26} />} title="Профилей пока нет" /></div>}
     <Invitations company={company} />
-    {selected && <Modal title={`Профиль #${selected.id}`} busy={action.busy} onClose={() => setSelected(undefined)}>
-      <form className="modal-body form-stack" onSubmit={event => formAction(event, form => void action.run(async () => {
+    {selected && <Modal title={confirmRemoval ? `Удалить профиль #${selected.id}?` : `Профиль #${selected.id}`} busy={action.busy} onClose={() => setSelected(undefined)}>
+      {confirmRemoval ? <div className="modal-body form-stack">
+        <p>Профиль исчезнет из доступов компании «{company.name}». Материалы и доступ к другим компаниям сохранятся.</p>
+        <ErrorMessage message={action.error} />
+        <div className="modal-actions">
+          <button className="button secondary" disabled={action.busy} onClick={() => { action.setError(''); setConfirmRemoval(false) }}>Отмена</button>
+          <button className="button danger" disabled={action.busy} onClick={() => void action.run(async () => {
+            await api(path + '/' + selected.id, 'DELETE')
+            access.setData(current => current?.filter(profile => profile.id !== selected.id))
+            setSelected(undefined); setConfirmRemoval(false)
+          })}>Удалить профиль</button>
+        </div>
+      </div> : <form className="modal-body form-stack" onSubmit={event => formAction(event, form => void action.run(async () => {
         await api(path + '/' + selected.id, 'PATCH', { role: formText(form, 'role'), active: form.has('active') })
         setSelected(undefined); access.retry()
       }))}>
         <label>Роль<select name="role" defaultValue={selected.role}><RoleOptions /></select></label>
         <label className="toggle-row"><input type="checkbox" name="active" defaultChecked={selected.active} />Доступ к компании</label>
         <ErrorMessage message={action.error} />
-        <div className="modal-actions"><button className="button primary" disabled={action.busy}>Сохранить</button></div>
-      </form>
+        <div className="modal-actions"><button type="button" className="button danger" disabled={action.busy} onClick={() => { action.setError(''); setConfirmRemoval(true) }}>Удалить профиль</button><button className="button primary" disabled={action.busy}>Сохранить</button></div>
+      </form>}
     </Modal>}
   </>
 }
